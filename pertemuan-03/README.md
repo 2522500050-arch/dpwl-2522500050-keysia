@@ -5,6 +5,7 @@
 Pada tahap ini dilakukan penelusuran dan pengujian pola
 Post-Redirect-Get (PRG) pada proses autentikasi.
 Penerapan PRG:
+AWE45T
 
 - Login berhasil menggunakan POST untuk proses autentikasi,
   kemudian redirect ke /admin dan dilanjutkan dengan GET.
