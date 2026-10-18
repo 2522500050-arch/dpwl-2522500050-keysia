@@ -4,18 +4,22 @@
    Jawaban:-PWD: Pondasi dasar front-end (HTML, CSS, JS) dan back-end (PHP & MySQL dasar).  
     -DPW: Lanjutan integrasi logika web, penanganan form, dan manipulasi database.  
     -DPWL: Pengembangan skala besar dengan framework MVC, arsitektur modular, dan keamanan.
+
 2. perbedaan PHP terstruktur dan MVC;
    Jawaban:Terstruktur: Kode logika, database, dan HTML tercampur dalam satu file (spaghetti code), sulit dirawat. Sedangkan MVC: Kode dipisah berdasarkan fungsi, lebih rapi, modular, dan mudah dikembangkan.
+
 3. fungsi Model, View, dan Controller;
    Jawaban:-Model: Mengelola logika data, basis data, dan aturan bisnis (CRUD).
    -View: Menampilkan antarmuka pengguna (UI/HTML).
    -Controller: Menghubungkan Model dan View serta memproses input dari request pengguna.
+
 4. alur request–response MVC;
    Jawaban: 1.Alur Request–Response MVC
    2.Routing & Controller Menerima Request
    3.Komunikasi dengan Model (Data)
    4.Menyiapkan View
    5.Response ke User
+
 5. pemetaan satu atau beberapa bagian/fitur aplikasi DPW ke Model, Controller, dan View disertai alasan; dan
    Jawaban:-Model (MahasiswaModel.php): Menyimpan query SQL (SELECT, INSERT) dan validasi data.
    Alasan: Model mengelola logika data, berkomunikasi dengan database, dan memastikan data memenuhi aturan sebelum tersimpan.
