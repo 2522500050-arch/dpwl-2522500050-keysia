@@ -46,3 +46,39 @@ $route['admin/mobil/hapus/(:any)'] = 'Mobil_controller/hapus/$1';
 
 - Akses URL ke `admin/mobil/tambah`, `admin/mobil/ubah/1`, maupun `admin/mobil/hapus/1` dapat diproses oleh _router_ aplikasi.
 - Tampilan sistem tetap mengeluarkan pesan _"Controller tidak ditemukan."_. Hal ini merupakan kondisi yang diharapkan (normal) pada tahap B karena berkas `Mobil_controller.php` belum dibuat dan baru akan diimplementasikan pada tahap selanjutnya (Tahap C).
+
+### Tahap C: Mengimplementasikan READ Data Kendaraan dengan MVC
+
+**Deskripsi Perubahan:**
+Mengimplementasikan fitur untuk membaca dan menampilkan daftar data kendaraan dari basis data (`t_mobil`) menggunakan arsitektur MVC.
+
+**Berkas yang Ditambahkan / Dimodifikasi:**
+
+- `application/models/Mobil_model.php` (Membuat model & method `getAll()` untuk query `t_mobil`)
+- `application/controllers/Mobil_controller.php` (Membuat controller, pengecekan autentikasi admin, dan method `index()`)
+- `application/views/admin/mobil_view.php` (Membuat view tabel daftar kendaraan lengkap dengan format status, foto, dan tombol aksi)
+
+**Hasil Pengujian:**
+
+- Navigasi ke `admin/mobil` berhasil menampilkan tabel data kendaraan.
+- Data dari tabel `t_mobil` muncul sesuai dengan kolom masing-masing (No. Plat, Nama Mobil, Kursi, Bagasi, Jenis, Transmisi, Tahun, Harga, Status, Foto).
+- Jika data di tabel kosong, halaman tetap dapat dirender dengan rapi.
+- Proteksi autentikasi berfungsi (hanya admin tersesi yang bisa mengakses halaman).
+
+### Tahap C: Mengimplementasikan READ Data Kendaraan dengan MVC
+
+**Deskripsi Perubahan:**
+Mengimplementasikan fitur untuk membaca dan menampilkan daftar data kendaraan dari basis data (`t_mobil`) menggunakan arsitektur MVC.
+
+**Berkas yang Ditambahkan / Dimodifikasi:**
+
+- `application/models/Mobil_model.php` (Membuat model & method `getAll()` untuk query `t_mobil`)
+- `application/controllers/Mobil_controller.php` (Membuat controller, pengecekan autentikasi admin, dan method `index()`)
+- `application/views/admin/mobil_view.php` (Membuat view tabel daftar kendaraan lengkap dengan format status, foto, dan tombol aksi)
+
+**Hasil Pengujian:**
+
+- Navigasi ke `admin/mobil` berhasil menampilkan tabel data kendaraan.
+- Data dari tabel `t_mobil` muncul sesuai dengan kolom masing-masing (No. Plat, Nama Mobil, Kursi, Bagasi, Jenis, Transmisi, Tahun, Harga, Status, Foto).
+- Jika data di tabel kosong, halaman tetap dapat dirender dengan rapi.
+- Proteksi autentikasi berfungsi (hanya admin tersesi yang bisa mengakses halaman).
