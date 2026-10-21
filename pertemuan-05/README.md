@@ -82,3 +82,21 @@ Mengimplementasikan fitur penambahan data kendaraan baru (INSERT) menggunakan po
 - Validasi server-side berhasil mencegat data yang tidak valid (seperti nomor plat kosong atau ukuran file melebihi batas).
 - Berkas foto berhasil terunggah dan tersimpan di folder `uploads/mobil/` dengan nama unik.
 - Data kendaraan baru berhasil masuk ke dalam database `t_mobil` dan langsung tampil pada tabel daftar kendaraan.
+
+### Tahap E: Mengimplementasikan UPDATE Data Kendaraan dengan MVC
+
+**Deskripsi Perubahan:**
+Mengimplementasikan fitur pengubahan data kendaraan (UPDATE) menggunakan pola MVC. Fitur ini mencakup pengambilan data lama berdasarkan nomor plat (Primary Key), pengisian otomatis ke formulir edit, penanganan pembaruan berkas foto (menghapus foto lama jika diganti foto baru), serta eksekusi query UPDATE menggunakan prepared statement.
+
+**Berkas yang Ditambahkan / Dimodifikasi:**
+
+- `application/models/Mobil_model.php` (Menambahkan method `findByNoPlat()` untuk pencarian data dan `update()` untuk query pembaruan data)
+- `application/controllers/Mobil_controller.php` (Menambahkan method `ubah()` untuk memproses pencarian, validasi, penggantian file foto lama, dan pembaruan data)
+- `application/views/admin/mobil_view.php` (Menyesuaikan formulir agar mendukung mode edit dengan menampilkan data lama dan pratinjau foto tersimpan)
+
+**Hasil Pengujian:**
+
+- Tombol "Ubah" pada tabel kendaraan berfungsi dengan benar dan mengarahkan ke URL `admin/mobil/ubah/{no_plat}`.
+- Formulir berhasil terisi otomatis (_auto-fill_) dengan data kendaraan yang dipilih.
+- Jika foto tidak diubah, foto lama tetap dipertahankan; jika diunggah foto baru, foto lama di server otomatis terhapus dan digantikan foto baru.
+- Pesan notifikasi _flash message_ ("Data kendaraan berhasil diperbarui.") berhasil muncul setelah proses pengubahan berhasil.
