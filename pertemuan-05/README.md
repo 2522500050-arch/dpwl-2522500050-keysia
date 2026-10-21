@@ -65,20 +65,20 @@ Mengimplementasikan fitur untuk membaca dan menampilkan daftar data kendaraan da
 - Jika data di tabel kosong, halaman tetap dapat dirender dengan rapi.
 - Proteksi autentikasi berfungsi (hanya admin tersesi yang bisa mengakses halaman).
 
-### Tahap C: Mengimplementasikan READ Data Kendaraan dengan MVC
+### Tahap D: Mengimplementasikan INSERT Data Kendaraan dengan MVC
 
 **Deskripsi Perubahan:**
-Mengimplementasikan fitur untuk membaca dan menampilkan daftar data kendaraan dari basis data (`t_mobil`) menggunakan arsitektur MVC.
+Mengimplementasikan fitur penambahan data kendaraan baru (INSERT) menggunakan pola MVC. Fitur ini mencakup pembuatan formulir tambah data, validasi server-side, penanganan unggah berkas foto kendaraan (depan, belakang, interior), serta pengamanan query menggunakan prepared statements.
 
 **Berkas yang Ditambahkan / Dimodifikasi:**
 
-- `application/models/Mobil_model.php` (Membuat model & method `getAll()` untuk query `t_mobil`)
-- `application/controllers/Mobil_controller.php` (Membuat controller, pengecekan autentikasi admin, dan method `index()`)
-- `application/views/admin/mobil_view.php` (Membuat view tabel daftar kendaraan lengkap dengan format status, foto, dan tombol aksi)
+- `application/models/Mobil_model.php` (Menambahkan method `create()` untuk query INSERT data kendaraan)
+- `application/controllers/Mobil_controller.php` (Menambahkan method `tambah()`, `renderMobil()`, `validateMobilInput()`, `uploadFoto()`, dan `hapusFotoBaru()`)
+- `application/views/admin/mobil_view.php` (Menambahkan elemen formulir tambah data kendaraan dan skrip JavaScript untuk live preview foto)
 
 **Hasil Pengujian:**
 
-- Navigasi ke `admin/mobil` berhasil menampilkan tabel data kendaraan.
-- Data dari tabel `t_mobil` muncul sesuai dengan kolom masing-masing (No. Plat, Nama Mobil, Kursi, Bagasi, Jenis, Transmisi, Tahun, Harga, Status, Foto).
-- Jika data di tabel kosong, halaman tetap dapat dirender dengan rapi.
-- Proteksi autentikasi berfungsi (hanya admin tersesi yang bisa mengakses halaman).
+- Formulir tambah data dapat diakses dan berhasil mengirimkan data melalui method POST.
+- Validasi server-side berhasil mencegat data yang tidak valid (seperti nomor plat kosong atau ukuran file melebihi batas).
+- Berkas foto berhasil terunggah dan tersimpan di folder `uploads/mobil/` dengan nama unik.
+- Data kendaraan baru berhasil masuk ke dalam database `t_mobil` dan langsung tampil pada tabel daftar kendaraan.
