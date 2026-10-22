@@ -100,3 +100,22 @@ Mengimplementasikan fitur pengubahan data kendaraan (UPDATE) menggunakan pola MV
 - Formulir berhasil terisi otomatis (_auto-fill_) dengan data kendaraan yang dipilih.
 - Jika foto tidak diubah, foto lama tetap dipertahankan; jika diunggah foto baru, foto lama di server otomatis terhapus dan digantikan foto baru.
 - Pesan notifikasi _flash message_ ("Data kendaraan berhasil diperbarui.") berhasil muncul setelah proses pengubahan berhasil.
+
+### Tahap F: Mengimplementasikan DELETE Data Kendaraan dengan MVC
+
+**Deskripsi Perubahan:**
+Mengimplementasikan fitur penghapusan data kendaraan (DELETE) menggunakan pola MVC. Fitur ini menjamin proteksi sesi autentikasi admin, pembatasan metode HTTP (hanya menerima request POST), penghapusan records pada database `t_mobil`, serta pembersihan berkas foto fisik (depan, belakang, interior) pada direktori `uploads/mobil/`.
+
+**Berkas yang Ditambahkan / Dimodifikasi:**
+
+- `application/models/Mobil_model.php` (Menambahkan method `delete()` menggunakan prepared statement)
+- `application/controllers/Mobil_controller.php` (Menambahkan method `hapus()` untuk validasi login, pengecekan metode request POST, eksekusi query hapus, dan pembersihan file foto via `hapusFotoBaru()`)
+
+**Hasil Pengujian:**
+
+- Pengajuan request DELETE selain metode POST berhasil dicegat dengan pesan error "Metode request tidak diizinkan."
+- Tombol "Hapus" pada tabel berhasil memicu konfirmasi penghapusan dan menghapus data kendaraan terpilih.
+- Data kendaraan berhasil terhapus dari tabel database `t_mobil`.
+- Berkas foto yang berkaitan dengan kendaraan tersebut (foto depan, belakang, interior) di direktori `uploads/mobil/` berhasil terhapus secara otomatis.
+- Jika terjadi kegagalan pada query database, berkas foto tetap dipertahankan dan sistem menampilkan pesan peringatan.
+- Notifikasi _flash message_ ("Data kendaraan berhasil dihapus.") tampil setelah pengalihan halaman kembali ke daftar kendaraan.
