@@ -329,7 +329,3 @@
 | Penanganan Logout                      | **Berhasil**      | Sesi dihapus dan pengguna dialihkan ke halaman login.     |
 
 ---
-
-git add .
-git commit -m "Menyiapkan route, model, controller, dan view login & logout penyewa untuk P6"
-git push
