@@ -256,3 +256,80 @@
 | Pengondisian Flash Message           | **Berhasil**      | Pesan sukses/error tampil sesuai dengan aksi pengguna.    |
 
 ---
+
+## E. Mengimplementasikan Autentikasi Penyewa (Login dan Logout)
+
+### 1. Tahap Pengembangan yang Dikerjakan
+
+- Menambahkan method verifikasi kredenisial penyewa (`verifyPenyewa`) pada model `Penyewa_model.php`.
+- Menambahkan konfigurasi route baru untuk mengakses alur login dan logout penyewa.
+- Menambahkan method `loginPenyewa()` dan `logoutPenyewa()` pada Controller `Auth.php`.
+- Membuat komponen View form login penyewa (`login.php`) di dalam direktori `application/views/auth/`.
+
+---
+
+### 2. Berkas / Komponen yang Ditambahkan, Diubah, atau Dihapus
+
+- **Diubah:** `application/models/Penyewa_model.php` (menambahkan method `verifyPenyewa()`).
+- **Diubah:** `application/config/routes.php` (menambahkan route `'auth/login'` dan `'auth/logout'`).
+- **Diubah:** `application/controllers/Auth.php` (menambahkan method `loginPenyewa()` dan `logoutPenyewa()`).
+- **Ditambahkan:** `application/views/auth/login.php`.
+
+---
+
+### 3. Perubahan dan Fitur yang Diimplementasikan
+
+- **Model Penyewa (`Penyewa_model.php`):** Method `verifyPenyewa(string $userPlg, string $password)` mengeksekusi pencarian data akun berdasarkan username dan memvalidasi kata sandi menggunakan `password_verify()`. Jika valid, mengembalikan data profil penyewa tanpa menyertakan kolom `sandi`.
+- **Routing Autentikasi (`routes.php`):**
+  - Mendaftarkan route `$route['auth/login'] = 'Auth/loginPenyewa';`.
+  - Mendaftarkan route `$route['auth/logout'] = 'Auth/logoutPenyewa';`.
+- **Controller Autentikasi (`Auth.php`):**
+  - **Handling `loginPenyewa()` (GET):** Menampilkan form login penyewa dan menangkap _flash message_ sukses atau galat.
+  - **Handling `loginPenyewa()` (POST):** Memvalidasi kelengkapan username dan password, lalu memanggil `Penyewa_model->verifyPenyewa()`. Jika autentikasi berhasil, regenerasi ID sesi (`session_regenerate_id(true)`), menyimpan sesi penyewa (`$_SESSION['penyewa_user_plg']`), dan mengarahkan pengguna ke halaman katalog.
+  - **Handling `logoutPenyewa()`:** Menghapus data sesi penyewa (`unset($_SESSION['penyewa_user_plg'])`) dan mengarahkan kembali ke halaman login dengan pesan notifikasi.
+- **View Login (`login.php`):**
+  - Mengintegrasikan header dan navbar modular dari katalog.
+  - Menyediakan form interaktif untuk memasukkan `Username` dan `Password`.
+  - Menampilkan alert _error_ jika login gagal serta tombol navigasi bagi pengguna baru yang belum memiliki akun untuk menuju halaman registrasi.
+
+---
+
+### 4. Langkah Pengujian yang Dilakukan
+
+1. Membuka peramban (browser) dan mengakses URL `http://localhost/dpwl-[NIM]/index.php/auth/login` atau menekan menu **Login** pada navbar.
+2. **Pengujian Kredensial Salah:**
+   - Memasukkan username yang belum terdaftar atau kata sandi yang salah.
+   - Memastikan sistem menolak autentikasi dan menampilkan pesan galat "Username atau password tidak valid."
+3. **Pengujian Login Berhasil:**
+   - Memasukkan username dan password penyewa yang valid/sesuai.
+   - Memastikan sistem berhasil login, mengarahkan pengguna ke halaman katalog, dan komponen navbar berubah menampilkan nama/menu penyewa beserta tombol **Logout**.
+4. **Pengujian Logout:**
+   - Menekan tombol **Logout** pada navbar.
+   - Memastikan sesi penyewa dihancurkan dan halaman dialihkan kembali ke form login dengan pesan "Anda telah berhasil logout."
+
+---
+
+### 5. Hasil Aktual Pengujian dan Penanganan Masalah
+
+- **Pemuatan Form & Autentikasi:** Form login berhasil dimuat dengan baik dan verifikasi `password_verify()` bekerja secara akurat.
+- **Manajemen Sesi:** Sesi login penyewa tersimpan aman di `$_SESSION['penyewa_user_plg']` dan proses regenerasi ID sesi berhasil mencegah ancaman _session fixation_.
+- **Kendala & Solusi:**
+  - _Kendala:_ Setelah login, nama penyewa pada navbar tidak berubah.
+  - _Solusi:_ Memastikan variabel `$_SESSION['penyewa_user_plg']` telah di-set pada controller dan diperiksa secara tepat pada file view `navbar.php`.
+
+---
+
+### 6. Status Fitur dan Hasil Verifikasi
+
+| Nama Fitur / Komponen                  | Status Verifikasi | Catatan                                                   |
+| :------------------------------------- | :---------------- | :-------------------------------------------------------- |
+| Model `verifyPenyewa()`                | **Berhasil**      | Memverifikasi kata sandi terenkripsi secara tepat.        |
+| Routing `/auth/login` & `/auth/logout` | **Berhasil**      | Meneruskan permintaan ke method controller yang sesuai.   |
+| Regenerasi & Penyimpanan Sesi          | **Berhasil**      | Sesi terdaftar dengan aman dan terlindungi dari fixation. |
+| Penanganan Logout                      | **Berhasil**      | Sesi dihapus dan pengguna dialihkan ke halaman login.     |
+
+---
+
+git add .
+git commit -m "Menyiapkan route, model, controller, dan view login & logout penyewa untuk P6"
+git push
