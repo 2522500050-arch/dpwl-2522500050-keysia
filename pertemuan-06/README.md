@@ -402,3 +402,65 @@
 | Unggah Foto KTP & SIM A                | **Berhasil**      | Mendukung validasi jenis/ukuran berkas dan autoremove foto lama. |
 
 ---
+
+## G. Mengimplementasikan Helper untuk Menangani URL dan Escape Karakter
+
+### 1. Tahap Pengembangan yang Dikerjakan
+
+- Membuat berkas helper baru `url_helper.php` dan `security_helper.php` pada direktori `application/helpers/`[cite: 1].
+- Menambahkan konfigurasi autoload helper di `application/config/autoload.php` agar helper dapat diakses secara global[cite: 1].
+- Mengimplementasikan fungsi pembantu navigasi URL (`base_url()`, `site_url()`) untuk standarisasi pemanggilan aset dan route[cite: 1].
+- Mengimplementasikan fungsi pembantu keamanan (_sanitization_) `e()` untuk mencegah celah keamanan Cross-Site Scripting (XSS) pada penulisan variabel ke HTML[cite: 1].
+
+---
+
+### 2. Berkas / Komponen yang Ditambahkan, Diubah, atau Dihapus
+
+- **Ditambahkan:** `application/helpers/url_helper.php`[cite: 1].
+- **Ditambahkan:** `application/helpers/security_helper.php`[cite: 1].
+- **Diubah:** `application/config/autoload.php` (mendaftarkan helper `url` dan `security`)[cite: 1].
+- **Diubah:** Berkas View pada aplikasi (`katalog`, `auth`, `penyewa`) untuk memperbarui pemanggilan fungsi helper `base_url()`, `site_url()`, dan `e()`[cite: 1].
+
+---
+
+### 3. Perubahan dan Fitur yang Diimplementasikan
+
+- **Helper URL (`url_helper.php`):**
+  - `base_url($uri)`: Menghasilkan URL absolut menuju direktori utama aplikasi/aset (contoh: `http://localhost/dpwl-[NIM]/assets/zay/css/bootstrap.min.css`)[cite: 1].
+  - `site_url($uri)`: Menghasilkan URL absolut menuju skrip `index.php` dan endpoint controller (contoh: `http://localhost/dpwl-[NIM]/index.php/katalog`)[cite: 1].
+- **Helper Keamanan (`security_helper.php`):**
+  - `e($value)`: Membungkus fungsi `htmlspecialchars()` dengan parameter `ENT_QUOTES` dan encoding `UTF-8` secara singkat untuk melakukan escape pada seluruh output string di View agar terhindar dari injeksi skrip berbahaya (XSS)[cite: 1].
+- **Autoload Helper (`autoload.php`):**
+  - Memuat helper secara otomatis dengan menambahkan registrasi `$autoload['helper'] = array('url', 'security');`[cite: 1].
+
+---
+
+### 4. Langkah Pengujian yang Dilakukan
+
+1. Membuka halaman Katalog, Detail Kendaraan, Registrasi, Login, dan Profil pada peramban (browser)[cite: 1].
+2. Memeriksa keberhasilan pemuatan aset CSS, gambar, dan JavaScript dengan memeriksa _Source Code_ halaman (`Ctrl + U`) untuk memastikan tag `<link>` dan `<script>` menggunakan format `base_url()` yang benar[cite: 1].
+3. Menguji navigasi link dan form action untuk memastikan atribut `href` dan `action` menggunakan `site_url()` yang mengarah ke route yang tepat[cite: 1].
+4. Menguji ketahanan XSS dengan memasukkan teks berkarakter khusus (seperti `<script>alert('XSS')</script>` atau tanda petik `'"`) pada input profil/registrasi, lalu memastikan karakter tersebut dirender aman dalam bentuk HTML entities (`&lt;script&gt;...`)[cite: 1].
+
+---
+
+### 5. Hasil Aktual Pengujian dan Penanganan Masalah
+
+- **Pemuatan URL & Aset:** Seluruh link gambar, stylesheet, dan skrip berhasil dimuat tanpa kendala _broken path_[cite: 1].
+- **Keamanan Output:** Penggunaan helper `e()` secara konsisten di View berhasil mengubah karakter khusus HTML menjadi entities aman, sehingga mencegah manipulasi DOM dan XSS[cite: 1].
+- **Kendala & Solusi:**
+  - _Kendala:_ Fungsi `base_url()` atau `e()` mengembalikan galat _Fatal Error: Call to undefined function_.
+  - _Solusi:_ Memastikan nama berkas helper di folder `application/helpers/` dinamai dengan akhiran `_helper.php` (misal: `url_helper.php`) dan terdaftar di `autoload.php`[cite: 1].
+
+---
+
+### 6. Status Fitur dan Hasil Verifikasi
+
+| Nama Fitur / Komponen       | Status Verifikasi | Catatan                                                                  |
+| :-------------------------- | :---------------- | :----------------------------------------------------------------------- |
+| Helper `base_url()`         | **Berhasil**      | Menghasilkan path absolut untuk pustaka CSS, JS, dan gambar[cite: 1].    |
+| Helper `site_url()`         | **Berhasil**      | Menghasilkan link routing controller secara dinamis[cite: 1].            |
+| Helper `e()` (Sanitasi XSS) | **Berhasil**      | Mencegah pengeksekusian skrip berbahaya di sisi tampilan[cite: 1].       |
+| Configuration Autoload      | **Berhasil**      | Helper otomatis dapat dipanggil di seluruh Controller dan View[cite: 1]. |
+
+---
