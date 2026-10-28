@@ -256,7 +256,3 @@
 | Pengondisian Flash Message           | **Berhasil**      | Pesan sukses/error tampil sesuai dengan aksi pengguna.    |
 
 ---
-
-git add .
-git commit -m "Menyiapkan route, model, controller, dan view registrasi penyewa untuk P6"
-git push
