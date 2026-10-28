@@ -329,3 +329,76 @@
 | Penanganan Logout                      | **Berhasil**      | Sesi dihapus dan pengguna dialihkan ke halaman login.     |
 
 ---
+
+## F. Mengimplementasikan Profil dan Pembaruan Data Penyewa
+
+### 1. Tahap Pengembangan yang Dikerjakan
+
+- Menambahkan method retrieval data profil (`getProfil`) dan pembaruan data profil (`updateProfil`) pada model `Penyewa_model.php`.
+- Menambahkan fungsi pembantu penanganan unggah berkas (`uploadFotoPenyewa`) serta pembersihan berkas lama (`hapusFotoLama`).
+- Menambahkan konfigurasi route baru untuk mengakses halaman profil penyewa.
+- Menambahkan method `profil()` pada Controller `Penyewa_controller.php` untuk mengelola logika validasi, perubahan kata sandi, serta pembaruan data dan berkas media penyewa.
+- Membuat komponen View profil penyewa (`profil.php`) di dalam direktori `application/views/penyewa/`.
+
+---
+
+### 2. Berkas / Komponen yang Ditambahkan, Diubah, atau Dihapus
+
+- **Diubah:** `application/models/Penyewa_model.php` (menambahkan method `getProfil()` dan `updateProfil()`).
+- **Diubah:** `application/config/routes.php` (menambahkan route `'penyewa/profil'`).
+- **Ditambahkan:** `application/controllers/Penyewa_controller.php`.
+- **Ditambahkan:** `application/views/penyewa/profil.php`.
+
+---
+
+### 3. Perubahan dan Fitur yang Diimplementasikan
+
+- **Model Profil (`Penyewa_model.php`):**
+  - `getProfil(string $userPlg)`: Mengambil data profil lengkap penyewa dari tabel `t_penyewa` tanpa mengembalikan kolom sandi terenkripsi.
+  - `updateProfil(string $userPlg, array $data)`: Memperbarui bidang data profil (`nik`, `nm_lngkp`, `no_hp`, `almt_lngkp`), opsional kata sandi baru (`sandi`), serta path berkas `ft_ktp` dan `ft_sim_a`.
+- **Routing Profil (`routes.php`):** Mendaftarkan route `$route['penyewa/profil'] = 'Penyewa_controller/profil';`.
+- **Controller Profil (`Penyewa_controller.php`):**
+  - **Otorisasi Sesi:** Memastikan hanya pengguna yang telah login (`$_SESSION['penyewa_user_plg']`) yang dapat mengakses halaman profil; mengalihkan ke form login jika sesi tidak ditemukan.
+  - **Validasi Server-Side:** Memvalidasi perubahan NIK (16 digit), nama lengkap, nomor HP, dan alamat.
+  - **Pembaruan Password Safe:** Memverifikasi `password_saat_ini` sebelum mengizinkan penggantian ke `password_baru` yang di-hash.
+  - **Manajemen Unggah Berkas:** Memvalidasi format gambar (JPG, PNG, WEBP) dan ukuran berkas (maksimal 5 MB) untuk KTP/SIM A, serta menghapus foto lama secara otomatis dari server setelah pembaruan basis data berhasil.
+- **View Profil (`profil.php`):**
+  - Menampilkan bidang `Username` secara read-only.
+  - Menyediakan formulir pembaruan data identitas, ganti kata sandi, dan pratinjau (_preview_) foto KTP serta SIM A yang sudah diunggah.
+
+---
+
+### 4. Langkah Pengujian yang Dilakukan
+
+1. Membuka peramban (browser) dan mengakses URL `http://localhost/dpwl-[NIM]/index.php/penyewa/profil` saat dalam keadaan belum login (memastikan dialihkan otomatis ke halaman login).
+2. Login sebagai penyewa, kemudian mengakses menu **Profil Saya** atau URL `http://localhost/dpwl-[NIM]/index.php/penyewa/profil`.
+3. **Pengujian Pembaruan Data Teks:** Mengubah NIK, Nama Lengkap, Nomor HP, atau Alamat, lalu menekan **Simpan Perubahan** untuk memastikan data berhasil diperbarui di basis data.
+4. **Pengujian Ganti Password:**
+   - Mengisi password saat ini yang salah (memastikan sistem menolak).
+   - Mengisi password saat ini yang benar dan password baru, lalu menguji login ulang menggunakan password baru.
+5. **Pengujian Unggah Foto KTP & SIM A:**
+   - Mengunggah berkas gambar dengan format valid (< 5 MB) dan memastikan pratinjau gambar tampil di halaman.
+   - Mengunggah berkas non-gambar atau ukuran > 5 MB (memastikan muncul alert pesan kesalahan validasi).
+
+---
+
+### 5. Hasil Aktual Pengujian dan Penanganan Masalah
+
+- **Otorisasi Sesi:** Halaman profil terlindungi dengan aman dari akses tanpa autentikasi.
+- **Pembaruan Profil & Media:** Pembaruan data teks dan proses unggah foto KTP/SIM A berjalan lancar. Berkas lama di folder `uploads/penyewa/` berhasil terhapus otomatis saat diganti berkas baru.
+- **Kendala & Solusi:**
+  - _Kendala:_ Foto KTP/SIM A tidak terunggah dan mengembalikan galat folder.
+  - _Solusi:_ Memastikan direktori `uploads/penyewa/` telah dibuat dan memiliki izin akses tulis (_write permission_).
+
+---
+
+### 6. Status Fitur dan Hasil Verifikasi
+
+| Nama Fitur / Komponen                  | Status Verifikasi | Catatan                                                          |
+| :------------------------------------- | :---------------- | :--------------------------------------------------------------- |
+| Protection Route & Session Check       | **Berhasil**      | Pengguna belum login dialihkan otomatis ke `/auth/login`.        |
+| Model `getProfil()` & `updateProfil()` | **Berhasil**      | Menarik dan memperbarui data akun penyewa secara presisi.        |
+| Pengubahan Password Secure             | **Berhasil**      | Memeriksa sandi lama sebelum menyimpan hash sandi baru.          |
+| Unggah Foto KTP & SIM A                | **Berhasil**      | Mendukung validasi jenis/ukuran berkas dan autoremove foto lama. |
+
+---
