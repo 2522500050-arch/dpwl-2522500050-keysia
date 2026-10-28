@@ -176,3 +176,87 @@
 | Penanganan Error 404             | **Berhasil**      | Menampilkan respons 404 jika ID mobil tidak ada di database. |
 
 ---
+
+## D. Mengimplementasikan Registrasi Penyewa / Pelanggan
+
+### 1. Tahap Pengembangan yang Dikerjakan
+
+- Menambahkan method query pencarian dan pembuatan data penyewa baru pada model `Penyewa_model.php`.
+- Menambahkan konfigurasi route baru untuk mengakses halaman registrasi penyewa.
+- Menambahkan method `register()` pada Controller `Auth.php` untuk menangani alur validasi input, hashing kata sandi, dan proses penyimpanan akun penyewa.
+- Membuat komponen View registrasi penyewa (`register.php`) di dalam direktori `application/views/auth/`.
+
+---
+
+### 2. Berkas / Komponen yang Ditambahkan, Diubah, atau Dihapus
+
+- **Diubah:** `application/models/Penyewa_model.php` (menambahkan method `findByUserPlg()` dan `create()`).
+- **Diubah:** `application/config/routes.php` (menambahkan route `'auth/register'`).
+- **Diubah:** `application/controllers/Auth.php` (menambahkan method `register()`).
+- **Ditambahkan:** `application/views/auth/register.php`.
+
+---
+
+### 3. Perubahan dan Fitur yang Diimplementasikan
+
+- **Model Penyewa (`Penyewa_model.php`):**
+  - `findByUserPlg(string $userPlg)`: Mengambil data akun penyewa berdasarkan username untuk pengecekan duplikasi saat pendaftaran.
+  - `create(array $data)`: Memasukkan data pendaftaran akun baru (username, sandi hashed, NIK, nama lengkap, nomor HP, dan alamat) ke basis data.
+- **Routing Registrasi (`routes.php`):** Mendaftarkan route `$route['auth/register'] = 'Auth/register';`.
+- **Controller Registrasi (`Auth.php`):**
+  - **Handling GET Request:** Memeriksa pesan kilat (_flash message_) dan merender view `auth/register`.
+  - **Handling POST Request:** Mengambil dan membersihkan input form (username, password, NIK, nama lengkap, no HP, alamat).
+  - **Validasi Server-Side:** Memeriksa format username (1–15 karakter), panjang password (minimal 8 karakter), keharmonisan konfirmasi password, format NIK (16 digit angka), nama lengkap, format nomor HP, serta alamat lengkap.
+  - **Keamanan Password:** Mengenkripsi kata sandi menggunakan fungsi `password_hash()` sebelum disimpan ke database.
+  - **Pencegahan Duplikasi:** Memastikan `user_plg` belum terdaftar di sistem sebelum eksekusi penyimpanan.
+- **View Registrasi (`register.php`):**
+  - Mengintegrasikan komponen header dan navbar modular dari modul katalog.
+  - Menyediakan formulir pendaftaran interaktif lengkap dengan atribut HTML5 validation (`pattern`, `maxlength`, `required`).
+  - Menampilkan alert pesan galat (_error_) atau pesan sukses registrasi secara dinamis.
+  - Mempertahankan isian data lama (_old input_) saat terjadi galat validasi agar pengguna tidak perlu mengetik ulang dari awal.
+
+---
+
+### 4. Langkah Pengujian yang Dilakukan
+
+1. Membuka peramban (browser) dan mengakses URL `http://localhost/dpwl-[NIM]/index.php/auth/register` atau menekan tombol **Registrasi** pada navbar.
+2. **Pengujian Input Tidak Valid (Validasi Error):**
+   - Mengisi form dengan password kurang dari 8 karakter atau konfirmasi password tidak cocok.
+   - Mengisi NIK tidak sama dengan 16 digit angka.
+   - Memastikan pesan kesalahan tampil dengan jelas dan nilai form sebelumnya tidak hilang (_old input_ tetap terisi).
+3. **Pengujian Username Duplikat:**
+   - Mendaftar kembali menggunakan username `user_plg` yang sudah terdaftar di basis data.
+   - Memastikan sistem menolak dan memunculkan pesan galat "Username sudah digunakan."
+4. **Pengujian Registrasi Berhasil:**
+   - Mengisi seluruh field pendaftaran dengan data valid.
+   - Mengirimkan form dan memastikan sistem melakukan pengalihan (_redirect_) kembali ke halaman registrasi dengan menampilkan notifikasi sukses.
+   - Memeriksa basis data untuk memastikan data akun baru berhasil masuk dengan password terenkripsi (hashed).
+
+---
+
+### 5. Hasil Aktual Pengujian dan Penanganan Masalah
+
+- **Pemuatan Form:** Form registrasi berhasil tampil rapi terintegrasi dengan layout `header` dan `navbar`.
+- **Validasi Server-side:** Seluruh aturan validasi (NIK 16 digit, min password 8 karakter, ketersediaan username) bekerja dengan akurat.
+- **Keamanan Data:** Kata sandi tersimpan di database dalam bentuk hash secure (`password_hash`).
+- **Kendala & Solusi:**
+  - _Kendala:_ Notifikasi sukses registrasi langsung hilang setelah halaman di-refresh.
+  - _Solusi:_ Penggunaan `unset($_SESSION['flash_penyewa'])` pada handler `GET` sudah tepat sehingga pesan sukses hanya tampil 1x (_flash message_).
+
+---
+
+### 6. Status Fitur dan Hasil Verifikasi
+
+| Nama Fitur / Komponen                | Status Verifikasi | Catatan                                                   |
+| :----------------------------------- | :---------------- | :-------------------------------------------------------- |
+| Model `findByUserPlg()` & `create()` | **Berhasil**      | Mampu mengecek ketersediaan akun dan menyimpan data baru. |
+| Routing `/auth/register`             | **Berhasil**      | Menghubungkan URL ke handler `Auth::register()`.          |
+| Validasi Input Server-Side           | **Berhasil**      | Menolak format NIK/password/username yang tidak sesuai.   |
+| Hashing Password                     | **Berhasil**      | Sandi tersimpan dalam format terenkripsi di database.     |
+| Pengondisian Flash Message           | **Berhasil**      | Pesan sukses/error tampil sesuai dengan aksi pengguna.    |
+
+---
+
+git add .
+git commit -m "Menyiapkan route, model, controller, dan view registrasi penyewa untuk P6"
+git push
