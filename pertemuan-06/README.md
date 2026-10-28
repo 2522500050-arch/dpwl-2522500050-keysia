@@ -108,10 +108,71 @@
 
 ---
 
-### 7. Perintah Git yang Dijalankan
+## C. Mengimplementasikan Detail Kendaraan
 
-```bash
-git add .
-git commit -m "Menyiapkan route, model, controller, dan view katalog kendaraan untuk P6"
-git push
-```
+### 1. Tahap Pengembangan yang Dikerjakan
+
+- Menambahkan method retrieval data spesifik kendaraan berdasarkan ID pada model `Mobil_model.php`.
+- Menambahkan konfigurasi route baru untuk mengakses halaman detail kendaraan dengan parameter ID.
+- Menambahkan method `detail()` pada Controller `Katalog_controller.php` untuk menangani logika pencarian data mobil dan pengiriman data ke View.
+- Membuat komponen View detail kendaraan (`detail.php`) di dalam direktori `application/views/katalog/`.
+
+---
+
+### 2. Berkas / Komponen yang Ditambahkan, Diubah, atau Dihapus
+
+- **Diubah:** `application/models/Mobil_model.php` (menambahkan method `findById()`).
+- **Diubah:** `application/config/routes.php` (menambahkan route `'katalog/detail/(:any)'`).
+- **Diubah:** `application/controllers/Katalog_controller.php` (menambahkan method `detail($id)`).
+- **Ditambahkan:** `application/views/katalog/detail.php`.
+
+---
+
+### 3. Perubahan dan Fitur yang Diimplementasikan
+
+- **Query Detail Kendaraan (`Mobil_model.php`):** Method `findById(string $id)` mengeksekusi query SQL `SELECT` menggunakan _prepared statement_ (`WHERE id_mobil = ? LIMIT 1`) untuk mencegah SQL Injection dan mengambil data lengkap 1 unit kendaraan.
+- **Routing Detail (`routes.php`):** Mendaftarkan route `$route['katalog/detail/(:any)'] = 'Katalog_controller/detail/$1';`.
+- **Controller Detail (`Katalog_controller.php`):**
+  - Menerima parameter `$idMobil`.
+  - Memanggil `Mobil_model->findById($idMobil)`.
+  - Jika data tidak ditemukan, mengembalikan HTTP status 404 dan menampilkan pesan galat.
+  - Jika ditemukan, mengirimkan variabel `$mobil` ke view `katalog/detail`.
+- **View Detail Kendaraan (`detail.php`):**
+  - Mengintegrasikan header dan navbar modular.
+  - Menampilkan galeri foto utama beserta thumbnail foto sekunder yang dapat diganti secara interaktif via JavaScript.
+  - Menampilkan spesifikasi teknis lengkap (merk/model, jenis, tahun pembuatan, tipe transmisi, kapasitas penumpang, nomor polisi/plat, harga sewa per hari, dan status ketersediaan unit).
+  - Menyediakan tombol navigasi **Kembali ke Katalog** serta tombol **Sewa Sekarang** / **Tidak Dapat Disewa** berdasarkan kondisi status unit.
+
+---
+
+### 4. Langkah Pengujian yang Dilakukan
+
+1. Membuka peramban (browser) dan memilih salah satu kendaraan dari halaman katalog, atau mengakses URL langsung `http://localhost/dpwl-[NIM]/index.php/katalog/detail/[ID_MOBIL]`.
+2. Memeriksa ketepatan data spesifikasi yang ditampilkan sesuai dengan data pada basis data.
+3. Menguji interaktivitas galeri thumbnail foto kendaraan (memastikan foto utama berganti saat thumbnail diklik).
+4. Memeriksa responsivitas dan status tombol aksi (Sewa / Tidak Dapat Disewa).
+5. Menguji skenario data tidak ditemukan dengan menguji URL ID yang tidak valid (misal: `/katalog/detail/MBL-999999`) untuk memastikan penanganan galat 404 berjalan dengan benar.
+
+---
+
+### 5. Hasil Aktual Pengujian dan Penanganan Masalah
+
+- **Status Pemuatan Halaman:** Halaman detail kendaraan berhasil dirender dengan sempurna sesuai ID yang dipanggil.
+- **Galeri Foto:** Fitur perpindahan foto utama melalui klik thumbnail berjalan dengan lancar tanpa kendala JS.
+- **Penanganan Galat (404):** Pengujian dengan ID dummy/tidak valid berhasil menampilkan pesan error 404 "Data kendaraan tidak ditemukan" secara presisi.
+- **Kendala & Solusi:**
+  - _Kendala:_ Thumbnail foto tidak merespons klik.
+  - _Solusi:_ Memastikan skrip event listener JavaScript pada `detail.php` sudah memuat selektor class thumbnail yang tepat.
+
+---
+
+### 6. Status Fitur dan Hasil Verifikasi
+
+| Nama Fitur / Komponen            | Status Verifikasi | Catatan                                                      |
+| :------------------------------- | :---------------- | :----------------------------------------------------------- |
+| Model `findById()`               | **Berhasil**      | Menarik data spesifik berdasarkan `id_mobil`.                |
+| Routing `/katalog/detail/(:any)` | **Berhasil**      | Parameter ID berhasil diteruskan ke controller.              |
+| View Galeri & Detail             | **Berhasil**      | Tampil dinamis lengkap dengan interaksi thumbnail foto.      |
+| Penanganan Error 404             | **Berhasil**      | Menampilkan respons 404 jika ID mobil tidak ada di database. |
+
+---
