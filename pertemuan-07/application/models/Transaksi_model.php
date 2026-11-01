@@ -9,6 +9,14 @@ class Transaksi_model
     $this->db = $db;
   }
 
+  public function tambahKeKeranjang($userPlg, $noPlat)
+  {
+    $query = "INSERT INTO keranjang (id_penyewa, no_plat) VALUES (?, ?)";
+    $stmt = $this->db->prepare($query);
+    $stmt->bind_param('is', $userPlg, $noPlat);
+    return $stmt->execute();
+  }
+
   private function ambilKunci(
     string $namaKunci,
     int $timeout = 10
@@ -83,10 +91,10 @@ class Transaksi_model
     try {
       $stmt = $this->db->prepare(
         "SELECT kode_sewa
-                FROM t_sewa
-                WHERE kode_sewa LIKE ?
-                ORDER BY kode_sewa DESC
-                LIMIT 1"
+                 FROM t_sewa
+                 WHERE kode_sewa LIKE ?
+                 ORDER BY kode_sewa DESC
+                 LIMIT 1"
       );
 
       if (!$stmt) {
