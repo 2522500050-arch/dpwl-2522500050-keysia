@@ -95,3 +95,6 @@ Kode pada tahap ini merupakan fondasi dasar model transaksi dan belum mencakup m
 
 Bagian B.2: Membuat Berkas application\controllers\Transaksi_controller.php
 Pada tahap ini, dilakukan pembuatan controller transaksi yang berfungsi untuk menangani permintaan penyewa dalam menambahkan kendaraan ke keranjang sewa. Controller ini bertugas memeriksa autentikasi login penyewa, memastikan metode permintaan HTTP yang digunakan, meneruskan data ke model transaksi, serta mengembalikan penyewa ke halaman asal dengan pesan hasil proses.
+
+Bagian B.3: Menambahkan Route Transaksi
+Pada tahap ini, dilakukan penambahan route baru untuk menghubungkan URL permintaan aplikasi dengan method yang ada di dalam controller transaksi. Route ini digunakan untuk memproses pengiriman data formulir penambahan kendaraan dari halaman katalog maupun detail kendaraan ke metode tambah() pada controller transaksi.
