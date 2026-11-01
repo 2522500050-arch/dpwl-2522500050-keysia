@@ -92,6 +92,3 @@ Seluruh kesalahan ditangkap (exception handling) dan melepaskan kunci secara oto
 Catatan Teknis B.1:
 
 Kode pada tahap ini merupakan fondasi dasar model transaksi dan belum mencakup metode penambahan item ke keranjang secara lengkap. Kunci transaksi harus tetap dipegang hingga seluruh alur penyimpanan header transaksi selesai pada tahap selanjutnya.
-
-Bagian B.2: Membuat Berkas application\controllers\Transaksi_controller.php
-Pada tahap ini, dilakukan pembuatan controller transaksi yang berfungsi untuk menangani permintaan penyewa dalam menambahkan kendaraan ke keranjang sewa. Controller ini bertugas memeriksa autentikasi login penyewa, memastikan metode permintaan HTTP yang digunakan, meneruskan data ke model transaksi, serta mengembalikan penyewa ke halaman asal dengan pesan hasil proses.
