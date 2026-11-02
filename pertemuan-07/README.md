@@ -236,3 +236,60 @@ Tombol Tambah ke Keranjang untuk unit yang berstatus tersedia berubah menjadi to
 Kendaraan Tidak Tersedia:
 
 Kendaraan berstatus tidak tersedia atau sedang disewa menampilkan tombol nonaktif bertuliskan Tidak Dapat Disewa.
+
+Bagian D.1: Mengubah application\views\katalog\navbar.php
+
+1. Deskripsi Perubahan
+
+Pada tahap ini, dilakukan pembaruan pada bilah navigasi atas (navbar) di berkas application\views\katalog\navbar.php. Tujuan perubahan ini adalah:
+
+Menampilkan pesan notifikasi (flash message) hasil proses transaksi secara dinamis di antarmuka katalog/halaman umum.
+
+Mengubah ikon tautan keranjang belanja agar mengarah ke route transaksi/keranjang.
+
+Menyiapkan variabel penghitung jumlah kendaraan di keranjang ($jumlahKeranjang) untuk ditampilkan pada lencana (badge) ikon keranjang.
+
+2. Berkas yang Diubah
+
+application\views\katalog\navbar.php
+
+3. Perubahan Kode (Snippet Utama)
+
+Inisialisasi Variabel Sesi dan Hitung Keranjang:
+
+// P7: menghitung jumlah mobil di keranjang penyewa
+$jumlahKeranjang = (int) ($jumlahKeranjang ?? 0);
+
+// P7: menampilkan flash message untuk katalog
+$flashKatalog = $_SESSION['flash_transaksi'] ?? null;
+unset($\_SESSION['flash_transaksi']);
+
+Penambahan Blok Alert / Flash Message:
+
+<?php if (is_array($flashKatalog) && !empty($flashKatalog['message'])): ?>
+  <div class="alert alert-<?= $e(($flashKatalog['type'] ?? '') === 'success' ? 'success' : 'danger') ?> alert-dismissible fade show m-3" role="alert">
+    <?= $e($flashKatalog['message']) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+  </div>
+<?php endif; ?>
+
+Pembaruan Tautan & Badge Keranjang:
+
+<?php if ($isPenyewaLogin): ?>
+  <a class="nav-icon position-relative text-decoration-none" href="<?= $e(site_url('transaksi/keranjang')) ?>" aria-label="Keranjang, <?= $jumlahKeranjang ?> kendaraan">
+    <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
+    <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark"><?= $jumlahKeranjang ?></span>
+  </a>
+  <!-- Ikon Profil Penyewa -->
+  ...
+<?php endif; ?>
+
+4. Hasil Pengujian Tampilan dan Fungsionalitas
+
+Pengujian dilakukan melalui peramban web pada URL http://localhost/dpwl-[NIM]/katalog:
+
+Tampilan Navbar: Navbar berhasil dimuat tanpa galat serta menampilkan tautan profil dan ikon keranjang saat penyewa sudah login.
+
+Flash Message: Pesan notifikasi dari sesi transaksi dapat muncul dengan benar dan dapat ditutup menggunakan tombol tutup (dismiss).
+
+Tautan Keranjang: Ikon keranjang berhasil mengarahkan pengguna ke alamat http://localhost/dpwl-[NIM]/transaksi/keranjang.
