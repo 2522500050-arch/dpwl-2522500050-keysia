@@ -3,23 +3,31 @@ $namaMobil = (string) ($mobil['nm_mobil'] ?? 'Kendaraan');
 $status = (string) ($mobil['status_unit'] ?? '');
 $statusTersedia = $status === 'tersedia';
 ?>
+
 <?php require APPPATH . 'views/katalog/header.php'; ?>
+
 <?php require APPPATH . 'views/katalog/navbar.php'; ?>
+
 <!-- Open Content -->
 <section class="bg-light">
   <div class="container pb-5">
     <div class="row">
+
       <div class="col-lg-5 mt-5">
         <?php
         $fotoKendaraan = [];
+
         foreach (['ft_depan', 'ft_blkg', 'ft_interior'] as $fieldFoto) {
           $namaFile = trim((string) ($mobil[$fieldFoto] ?? ''));
+
           if ($namaFile !== '') {
             $fotoKendaraan[] = $namaFile;
           }
         }
+
         $fotoUtama = $fotoKendaraan[0] ?? null;
         ?>
+
         <div class="card mb-3">
           <?php if ($fotoUtama !== null): ?>
             <img
@@ -41,6 +49,7 @@ $statusTersedia = $status === 'tersedia';
             </div>
           <?php endif; ?>
         </div>
+
         <div class="row">
           <!-- Panah kiri -->
           <div class="col-1 align-self-center">
@@ -48,11 +57,13 @@ $statusTersedia = $status === 'tersedia';
               <i class="text-dark fas fa-chevron-left"></i>
             </a>
           </div>
+
           <!-- Tiga thumbnail -->
           <div class="col-10">
             <div class="row" id="galeri-thumbnail">
               <?php for ($i = 0; $i < 3; $i++): ?>
                 <?php $namaFile = $fotoKendaraan[$i] ?? null; ?>
+
                 <div class="col-4">
                   <?php if ($namaFile !== null): ?>
                     <a
@@ -76,10 +87,8 @@ $statusTersedia = $status === 'tersedia';
                     </a>
                   <?php else: ?>
                     <div
-
-                      class="d-flex align-items-center justify-content-center text-muted text-
+                      class="d-flex align-items-center justify-content-center text-muted text
 center"
-
                       style="height: 112px; font-size: 12px;">
                       Foto tidak tersedia
                     </div>
@@ -88,6 +97,7 @@ center"
               <?php endfor; ?>
             </div>
           </div>
+
           <!-- Panah kanan -->
           <div class="col-1 align-self-center">
             <a href="#" id="foto-berikutnya" role="button" aria-label="Foto berikutnya">
@@ -96,6 +106,7 @@ center"
           </div>
         </div>
       </div>
+
       <script>
         document.addEventListener('DOMContentLoaded', function() {
           const foto = <?= json_encode(
@@ -109,14 +120,17 @@ center"
 
           const gambarUtama = document.getElementById('product-detail');
           const thumbnail = document.querySelectorAll('.thumbnail-kendaraan');
+
           if (!gambarUtama || foto.length === 0) {
             return;
           }
+
           let indeksAktif = 0;
 
           function tampilkanFoto(indeks) {
             indeksAktif = (indeks + foto.length) % foto.length;
             gambarUtama.src = foto[indeksAktif];
+
             thumbnail.forEach(function(item) {
               item.classList.toggle(
                 'border',
@@ -128,32 +142,39 @@ center"
               );
             });
           }
+
           thumbnail.forEach(function(item) {
             item.addEventListener('click', function(event) {
               event.preventDefault();
               tampilkanFoto(Number(item.dataset.index));
             });
           });
+
           document.getElementById('foto-sebelumnya')
             ?.addEventListener('click', function(event) {
               event.preventDefault();
               tampilkanFoto(indeksAktif - 1);
             });
+
           document.getElementById('foto-berikutnya')
             ?.addEventListener('click', function(event) {
               event.preventDefault();
               tampilkanFoto(indeksAktif + 1);
             });
+
           tampilkanFoto(0);
         });
       </script>
+
       <!-- col end -->
       <div class="col-lg-7 mt-5">
         <div class="card">
           <div class="card-body">
+
             <h1 class="h2">
               <?= htmlspecialchars($namaMobil, ENT_QUOTES, 'UTF-8') ?>
             </h1>
+
             <p class="h3 py-2 detail-harga text-success">
               Rp <?= number_format(
                     (int) $mobil['hrg_hari'],
@@ -162,6 +183,7 @@ center"
                     '.'
                   ) ?> / hari
             </p>
+
             <ul class="list-unstyled">
               <li class="mb-2">
                 <strong>Jenis:</strong>
@@ -205,6 +227,7 @@ center"
                 <?php endif; ?>
               </li>
             </ul>
+
             <h6 class="h6">Deskripsi Kendaraan</h6>
             <p>
               <?= nl2br(htmlspecialchars(
@@ -213,17 +236,72 @@ center"
                 'UTF-8'
               )) ?>
             </p>
-            <form action="" method="GET">
-              <input type="hidden" name="product-title" value="Activewear">
-              <div class="row pb-3">
-                <div class="col d-grid">
-                  <button type="submit" class="btn btn-success btn-lg" name="submit"
+            <?php if (!$statusTersedia): ?>
+              <div class="alert alert-secondary" role="status">
+                Kendaraan ini tidak dapat ditambahkan ke keranjang
+                karena statusnya tidak tersedia.
+              </div>
+            <?php elseif (empty($_SESSION['penyewa_user_plg'])): ?>
+              <div class="alert alert-info" role="status">
+                Silakan login sebagai penyewa atau registrasi akun
+                terlebih dahulu untuk menambahkan kendaraan ke keranjang.
+              </div>
 
-                    value="addtocard">Add To Cart</button>
+              <div class="row g-2 pb-3">
+                <div class="col-md-6 d-grid">
+                  <a
+                    href="<?= htmlspecialchars(
+                            site_url('auth/login-penyewa'),
+                            ENT_QUOTES,
+                            'UTF-8'
+                          ) ?>"
+                    class="btn btn-success btn-lg">
+                    Login Penyewa
+                  </a>
+                </div>
 
+                <div class="col-md-6 d-grid">
+                  <a
+                    href="<?= htmlspecialchars(
+                            site_url('auth/register'),
+                            ENT_QUOTES,
+                            'UTF-8'
+                          ) ?>"
+                    class="btn btn-outline-success btn-lg">
+                    Registrasi
+                  </a>
                 </div>
               </div>
-            </form>
+            <?php else: ?>
+              <form
+                action="<?= htmlspecialchars(
+                          site_url('transaksi/tambah'),
+                          ENT_QUOTES,
+                          'UTF-8'
+                        ) ?>"
+                method="POST">
+
+                <input
+                  type="hidden"
+                  name="no_plat"
+                  value="<?= htmlspecialchars(
+                            (string) ($mobil['no_plat'] ?? ''),
+                            ENT_QUOTES,
+                            'UTF-8'
+                          ) ?>">
+
+                <input
+                  type="hidden"
+                  name="return_to"
+                  value="detail">
+                <div class="d-grid pb-3">
+                  <button type="submit" class="btn btn-success btn-lg">
+                    Tambah ke Keranjang
+                  </button>
+                </div>
+              </form>
+            <?php endif; ?>
+
           </div>
         </div>
       </div>

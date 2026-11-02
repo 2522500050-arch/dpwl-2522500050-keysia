@@ -98,3 +98,79 @@ Pada tahap ini, dilakukan pembuatan controller transaksi yang berfungsi untuk me
 
 Bagian B.3: Menambahkan Route Transaksi
 Pada tahap ini, dilakukan penambahan route baru untuk menghubungkan URL permintaan aplikasi dengan method yang ada di dalam controller transaksi. Route ini digunakan untuk memproses pengiriman data formulir penambahan kendaraan dari halaman katalog maupun detail kendaraan ke metode tambah() pada controller transaksi.
+
+Bagian C.1: Mengubah Formulir pada application\views\katalog\detail.php
+
+1. Deskripsi Perubahan
+
+Pada tahap ini, dilakukan penyesuaian pada formulir tombol penambahan ke keranjang (Add to Cart) di halaman detail kendaraan (application\views\katalog\detail.php). Perubahan ini bertujuan untuk mengintegrasikan tombol keranjang dengan kontrol hak akses penyewa dan status ketersediaan unit kendaraan.
+
+Formulir ini dikondisikan ke dalam 3 status tampilan:
+
+Penyewa Belum Login: Menampilkan pesan notifikasi untuk login/registrasi beserta tombol pengarah ke auth/login-penyewa dan auth/register.
+
+Kendaraan Tidak Tersedia: Menampilkan notifikasi (alert) bahwa kendaraan tidak dapat ditambahkan ke keranjang karena status unit tidak tersedia.
+
+Penyewa Sudah Login & Kendaraan Tersedia: Menampilkan formulir POST yang mengarah ke site_url('transaksi/tambah') dengan membawa input tersembunyi (no_plat dan return_to = detail) serta tombol Tambah ke Keranjang.
+
+2. Berkas yang Diubah
+
+application\views\katalog\detail.php
+
+3. Perubahan Kode (Diff/Snippet)
+
+Mengganti blok formulir standar Add To Cart sebelumnya dengan kondisional PHP berikut:
+
+<?php if (!$statusTersedia): ?>
+
+    <div class="alert alert-secondary" role="status">
+        Kendaraan ini tidak dapat ditambahkan ke keranjang karena statusnya tidak tersedia.
+    </div>
+
+<?php elseif (empty($_SESSION['penyewa_user_plg'])): ?>
+
+    <div class="alert alert-info" role="status">
+        Silakan login sebagai penyewa atau registrasi akun terlebih dahulu untuk menambahkan kendaraan ke keranjang.
+    </div>
+    <div class="row g-2 pb-3">
+        <div class="col-md-6 d-grid">
+            <a href="<?= htmlspecialchars(site_url('auth/login-penyewa'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-lg">
+                Login Penyewa
+            </a>
+        </div>
+        <div class="col-md-6 d-grid">
+            <a href="<?= htmlspecialchars(site_url('auth/register'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-outline-success btn-lg">
+                Registrasi
+            </a>
+        </div>
+    </div>
+
+<?php else: ?>
+
+    <form action="<?= htmlspecialchars(site_url('transaksi/tambah'), ENT_QUOTES, 'UTF-8') ?>" method="POST">
+        <input type="hidden" name="no_plat" value="<?= htmlspecialchars((string) ($mobil['no_plat'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+        <input type="hidden" name="return_to" value="detail">
+        <div class="d-grid pb-3">
+            <button type="submit" class="btn btn-success btn-lg">
+                Tambah ke Keranjang
+            </button>
+        </div>
+    </form>
+
+<?php endif; ?>
+
+4. Hasil Pengujian Tampilan dan Fungsionalitas
+
+Pengujian dilakukan melalui peramban web pada URL http://localhost/dpwl-[NIM]/katalog/detail/[NO_PLAT]:
+
+Kondisi Belum Login:
+
+Menampilkan notifikasi info dan tombol opsi Login Penyewa & Registrasi.
+
+Kondisi Kendaraan Tidak Tersedia:
+
+Menampilkan notifikasi berwarna abu-abu (alert-secondary) bahwa unit tidak tersedia.
+
+Kondisi Sudah Login (Penyewa) & Unit Tersedia:
+
+Tombol hijau bertuliskan Tambah ke Keranjang tampil aktif dan siap mengirimkan data via metode POST.
