@@ -358,3 +358,48 @@ Memastikan seluruh data yang dirender ke HTML telah melalui proses escaping meng
 
 Bagian F.2: Menambahkan Method keranjang() dan Lainnya pada Controller TransaksiPada tahap ini, dilakukan implementasi logika pengontrol (controller) pada berkas application/controllers/Transaksi_controller.php serta penambahan method pendukung pada model transaksi (application/models/Transaksi_model.php) untuk menangani alur kerja keranjang sewa, pembaruan periode sewa, penghapusan item, dan pengajuan checkout.
 Rangkuman Perubahan & Implementasi:Implementasi Method Controller (Transaksi_controller.php):keranjang(): Menampilkan halaman isi keranjang berdasarkan kode_sewa atau mencari keranjang aktif yang dimiliki oleh penyewa yang sedang login (getKodeKeranjangAktif()). Jika keranjang kosong, pengguna diarahkan kembali ke katalog dengan notifikasi flash message.perbaruiPeriode(): Menerima data HTTP POST berupa tanggal mulai, tanggal selesai, dan waktu pengambilan untuk memperbarui masa sewa transaksi pada tabel t_sewa dan menyesuaikan durasi sewa pada tabel detail.hapus(): Mengunci dan menghapus item kendaraan tertentu dari tabel t_pilih berdasarkan kode_sewa dan no_plat.checkout(): Menangani alur konfirmasi transaksi (melalui metode GET) serta pemrosesan checkout (melalui metode POST) untuk mengubah status transaksi dari 'keranjang' menjadi 'diajukan', sekaligus mengunci kendaraan dan mencatat pembayaran DP (30%) awal berstatus pending pada tabel t_bayar.Pengembangan Method Model Transaksi (Transaksi_model.php):Menambahkan helper validasiWaktuMulai() untuk memastikan waktu pengambilan minimal 2 jam dari waktu server (Asia/Jakarta).Menambahkan perbaruiPeriodeKeranjang() untuk melakukan pembaruan transaksi dan kalkulasi ulang jumlah hari (n_hari) pada detail sewa di dalam blok transaksi basis data.Menambahkan getKeranjang() untuk mengambil gabungan data header (t_sewa) dan detail (t_pilih dan t_mobil) beserta total kalkulasi biaya sewa.Menambahkan hapusDariKeranjang() dan getKodeKeranjangAktif().Menambahkan logika checkout() yang mengimplementasikan pessimistic locking (FOR UPDATE) pada tabel transaksi, penguncian ketersediaan unit mobil, serta pembuatan nomor bukti pembayaran DP (PAY/YYYYMMDD/NN).Registrasi Route Aplikasi (application/config/routes.php):Menambahkan pemetaan URL untuk aksi transaksi berikut:transaksi/keranjang $\rightarrow$ Transaksi_controller/keranjangtransaksi/perbarui-periode $\rightarrow$ Transaksi_controller/perbaruiPeriodetransaksi/hapus $\rightarrow$ Transaksi_controller/hapustransaksi/checkout $\rightarrow$ Transaksi_controller/checkoutPengujian & Validasi Integrasi:Pengujian navigasi keranjang sewa berjalan dengan baik untuk akun penyewa yang terautentikasi.Pembaruan periode sewa memperbarui durasi dan total harga secara otomatis.Penghapusan item keranjang memutakhirkan isi keranjang tanpa merusak relasi header transaksi.
+
+F.3. Membuat Halaman Konfirmasi Transaksi dan Menguji Checkout
+
+F.3.1. Membuat Halaman Konfirmasi Transaksi
+
+Pada tahap ini, saya membuat halaman konfirmasi transaksi dengan membuat file `application/views/transaksi/konfirmasi.php`.
+
+Halaman ini digunakan untuk menampilkan ringkasan penyewaan kendaraan sebelum transaksi diajukan kepada admin.
+
+Informasi yang ditampilkan pada halaman konfirmasi meliputi:
+
+- Kode transaksi.
+- Tanggal mulai dan tanggal selesai penyewaan.
+- Waktu pengambilan kendaraan.
+- Daftar kendaraan yang disewa.
+- Nomor polisi kendaraan.
+- Harga sewa per hari.
+- Durasi penyewaan.
+- Subtotal setiap kendaraan.
+- Total biaya sewa.
+- Uang muka (DP) sebesar 30%.
+- Sisa pembayaran setelah DP.
+
+Saya juga menambahkan dua tombol, yaitu **Kembali ke Keranjang** dan **Konfirmasi dan Ajukan Transaksi**.
+
+Tombol konfirmasi digunakan untuk mengirimkan kode transaksi melalui metode POST ke route `transaksi/checkout`. Sebelum transaksi diajukan, sistem menampilkan dialog konfirmasi kepada penyewa.
+
+F.3.2. Menguji Tampilan Konfirmasi Checkout
+
+Setelah halaman konfirmasi selesai dibuat, saya melakukan pengujian melalui browser dengan langkah-langkah berikut:
+
+1. Menjalankan Laragon dan membuka aplikasi DPWL melalui localhost.
+2. Login menggunakan akun penyewa yang memiliki minimal satu kendaraan di dalam keranjang.
+3. Membuka halaman keranjang dan menekan tombol **Checkout / Lihat Konfirmasi**.
+4. Memastikan halaman Konfirmasi Transaksi menampilkan kode transaksi, periode sewa, waktu pengambilan, daftar kendaraan, harga per hari, durasi, subtotal, dan total sewa.
+5. Memeriksa perhitungan uang muka sebesar 30% dari total biaya sewa serta sisa pembayaran.
+6. Menekan tombol **Kembali ke Keranjang** dan memastikan aplikasi kembali ke halaman keranjang dengan kode transaksi yang sama.
+7. Memastikan halaman konfirmasi tidak dapat diakses untuk transaksi milik penyewa lain atau transaksi yang sudah tidak berstatus keranjang.
+
+**Hasil Pengujian:**
+
+- Halaman konfirmasi transaksi dapat ditampilkan.
+- Informasi penyewaan ditampilkan sesuai data keranjang.
+- Perhitungan total sewa, DP 30%, dan sisa pembayaran ditampilkan.
+- Tombol kembali ke keranjang berfungsi sesuai tujuan.
