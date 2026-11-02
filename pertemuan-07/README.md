@@ -174,3 +174,65 @@ Menampilkan notifikasi berwarna abu-abu (alert-secondary) bahwa unit tidak terse
 Kondisi Sudah Login (Penyewa) & Unit Tersedia:
 
 Tombol hijau bertuliskan Tambah ke Keranjang tampil aktif dan siap mengirimkan data via metode POST.
+
+Bagian C.2: Mengubah Formulir pada application\views\katalog\index.php
+
+1. Deskripsi Perubahan
+
+Pada tahap ini, dilakukan penyesuaian pada tombol penambahan kendaraan di halaman katalog kendaraan (application\views\katalog\index.php). Perubahan ini bertujuan untuk mengondisikan status tombol berdasarkan ketersediaan unit kendaraan dan status autentikasi penyewa saat berada di tampilan katalog utama.
+
+Tampilan tombol pada kartu kendaraan (card item) dikondisikan sebagai berikut:
+
+Kendaraan Tersedia & Penyewa Sudah Login: Menampilkan formulir dengan metode POST mengarah ke route transaksi/tambah dengan data tersembunyi no_plat dan return_to = katalog. Tombol Tambah ke Keranjang berada dalam kondisi aktif.
+
+Kendaraan Tersedia & Penyewa Belum Login: Menampilkan tombol Tambah ke Keranjang dalam keadaan nonaktif (disabled).
+
+Kendaraan Tidak Tersedia / Sedang Disewa: Menampilkan tombol nonaktif (disabled) bertuliskan Tidak Dapat Disewa dengan warna tombol sekunder (btn-secondary).
+
+2. Berkas yang Diubah
+
+application\views\katalog\index.php
+
+3. Perubahan Kode (Diff/Snippet)
+
+Mengganti blok kondisi tombol pada perulangan foreach ($daftarMobil as $mobil) di application\views\katalog\index.php:
+
+<?php if ($mobil['status_unit'] === 'tersedia'): ?>
+
+    <?php if (!empty($_SESSION['penyewa_user_plg'])): ?>
+        <form action="<?= htmlspecialchars(site_url('transaksi/tambah'), ENT_QUOTES, 'UTF-8') ?>" method="POST">
+            <input type="hidden" name="no_plat" value="<?= htmlspecialchars((string) $mobil['no_plat'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="return_to" value="katalog">
+            <button type="submit" class="btn btn-success w-100">
+                Tambah ke Keranjang
+            </button>
+        </form>
+    <?php else: ?>
+        <button type="button" class="btn btn-success w-100" disabled>
+            Tambah ke Keranjang
+        </button>
+    <?php endif; ?>
+
+<?php else: ?>
+
+    <button type="button" class="btn btn-secondary w-100" disabled>
+        Tidak Dapat Disewa
+    </button>
+
+<?php endif; ?>
+
+4. Hasil Pengujian Tampilan dan Fungsionalitas
+
+Pengujian dilakukan melalui peramban web pada URL http://localhost/dpwl-[NIM]/katalog:
+
+Kondisi Belum Login:
+
+Tombol Tambah ke Keranjang untuk unit yang berstatus tersedia tampil dalam keadaan nonaktif (disabled).
+
+Kondisi Sudah Login sebagai Penyewa:
+
+Tombol Tambah ke Keranjang untuk unit yang berstatus tersedia berubah menjadi tombol aktif dan siap mengirimkan formulir penambahan keranjang via POST.
+
+Kendaraan Tidak Tersedia:
+
+Kendaraan berstatus tidak tersedia atau sedang disewa menampilkan tombol nonaktif bertuliskan Tidak Dapat Disewa.
