@@ -305,3 +305,15 @@ D.2.1 & D.2.2. Penghitungan dan Pengiriman Jumlah Keranjang
   - Mengintegrasikan pemanggilan `Transaksi_model` ke dalam `Katalog_controller` agar pengontrol katalog dapat mengakses fungsi terkait transaksi[cite: 204].
   - Menyesuaikan method `index()` dan `detail()` dengan menyisipkan pengambilan data `jumlahKeranjang` berdasarkan username penyewa yang aktif[cite: 205, 206].
   - Mengirimkan variabel `jumlahKeranjang` ke dalam _view_ katalog dan detail kendaraan[cite: 205, 206], sehingga lencana angka pada ikon keranjang belanja di bilah navigasi (_navbar_) dapat menampilkan jumlah muatan secara dinamis[cite: 206].
+
+  D.2.3. Memperbarui `application/controllers/Penyewa_controller.php`
+
+* **Integrasi Model Transaksi pada Controller Penyewa**:
+  - Menambahkan pemanggilan berkas model transaksi (`require_once APPPATH 'models/Transaksi_model.php'`) pada bagian atas berkas pengendali profil penyewa.
+  - Menambahkan properti privat `$transaksiModel` serta menginisialisasikannya di dalam method `__construct()` agar controller dapat mengakses fungsi-fungsi transaksi.
+
+* **Pengiriman Jumlah Keranjang ke Halaman Profil**:
+  - Menyesuaikan method `profil()` pada saat permintaan metode `GET` maupun saat terjadi kegagalan validasi masukan (_error handling_).
+  - Memanggil method `getJumlahMobilKeranjang($userPlg)` guna mengambil jumlah muatan keranjang milik penyewa yang sedang aktif _login_.
+  - Menyertakan parameter `'jumlahKeranjang' => $jumlahKeranjang` ke dalam susunan data array saat memuat tampilan _view_ `penyewa/profil`.
+  - Hal ini memastikan agar bilah navigasi (_navbar_) tetap dapat merender dan menampilkan lencana jumlah keranjang secara konsisten dan akurat, tidak hanya di halaman katalog dan detail kendaraan, tetapi juga saat penyewa membuka atau memperbarui halaman profil akun mereka.

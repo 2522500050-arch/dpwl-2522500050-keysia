@@ -1,11 +1,14 @@
 <?php
 require_once APPPATH . 'models/Penyewa_model.php';
+require_once APPPATH . 'models/Transaksi_model.php';
 class Penyewa_controller extends Controller
 {
   private Penyewa_model $model;
+  private Transaksi_model $transaksiModel;
   public function __construct()
   {
     $this->model = new Penyewa_model();
+    $this->transaksiModel = new Transaksi_model();
   }
   public function profil(): void
   {
@@ -28,11 +31,13 @@ class Penyewa_controller extends Controller
         }
         $flash = $_SESSION['flash_profil_penyewa'] ?? null;
         unset($_SESSION['flash_profil_penyewa']);
+        $jumlahKeranjang = $this->transaksiModel->getJumlahMobilKeranjang($userPlg);
         $this->view('penyewa/profil', [
           'profil' => $profil,
           'flash' => $flash,
           'error' => null,
-          'old' => []
+          'old' => [],
+          'jumlahKeranjang' => $jumlahKeranjang
         ]);
         return;
       } catch (Throwable $e) {
@@ -106,13 +111,17 @@ class Penyewa_controller extends Controller
           }
         }
       }
+      $jumlahKeranjang = $this->transaksiModel->getJumlahMobilKeranjang($userPlg);
+
       if ($error !== null) {
         $this->view('penyewa/profil', [
           'profil' => $profil,
           'flash' => null,
           'error' => $error,
-          'old' => $old
+          'old' => $old,
+          'jumlahKeranjang' => $jumlahKeranjang
         ]);
+
         return;
       }
       $uploadedFiles = [];
@@ -246,11 +255,17 @@ kontrol.';
     array $old,
     string $error
   ): void {
+    $userPlg = trim((string) ($_SESSION['penyewa_user_plg'] ?? ''));
+    $jumlahKeranjang = $userPlg === ''
+      ? 0
+      : $this->transaksiModel->getJumlahMobilKeranjang($userPlg);
+
     $this->view('penyewa/profil', [
       'profil' => $profil,
       'flash' => null,
       'error' => $error,
-      'old' => $old
+      'old' => $old,
+      'jumlahKeranjang' => $jumlahKeranjang
     ]);
   }
   private function uploadFotoPenyewa(string $field): array
