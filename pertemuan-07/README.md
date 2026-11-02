@@ -317,3 +317,12 @@ D.2.1 & D.2.2. Penghitungan dan Pengiriman Jumlah Keranjang
   - Memanggil method `getJumlahMobilKeranjang($userPlg)` guna mengambil jumlah muatan keranjang milik penyewa yang sedang aktif _login_.
   - Menyertakan parameter `'jumlahKeranjang' => $jumlahKeranjang` ke dalam susunan data array saat memuat tampilan _view_ `penyewa/profil`.
   - Hal ini memastikan agar bilah navigasi (_navbar_) tetap dapat merender dan menampilkan lencana jumlah keranjang secara konsisten dan akurat, tidak hanya di halaman katalog dan detail kendaraan, tetapi juga saat penyewa membuka atau memperbarui halaman profil akun mereka.
+
+  Bagian E.1: Mengintegrasikan Proses Penambahan Kendaraan ke Keranjang
+  Pada tahap ini, pengembangan dilanjutkan dengan mengimplementasikan method tambahKeKeranjang() beserta fungsi-fungsi pembantu pendukungnya di dalam berkas application/models/Transaksi_model.php.
+  tabel t_mobil menggunakan klausa FOR UPDATE guna menghindari race condition saat unit disewa bersamaan.Menggunakan helper namaKunciKeranjang() dan ambilKunci() untuk mengamankan pembuatan keranjang aktif per penyewa.
+
+  1.Manajemen Header & Detail Transaksi (Pola Header-Detail):
+  Pengecekan keranjang aktif milik penyewa dengan status 'keranjang' pada tabel t_sewa. Jika belum ada, sistem otomatis membuat header transaksi baru menggunakan format kode sewa harian (INV/YYYYMMDD/NN). Validasi tanggal mulai dan tanggal selesai sewa melalui helper hitungHariSewa() serta normalisasi waktu pengambilan. Pencegahan duplikasi kendaraan agar mobil yang sama tidak dapat dimasukkan dua kali ke dalam keranjang aktif yang sama. Penyimpanan detail sewa ke dalam tabel t_pilih dengan mencatat harga sewa (hrg_sewa) dan durasi hari (n_hari).
+
+  2.Pengujian Fungsionalitas:Berhasil diuji melalui peramban (lokal) dengan login sebagai penyewa dan menekan tombol Tambah ke Keranjang pada halaman katalog maupun detail kendaraan. Sistem berhasil mengarahkan kembali halaman dan menampilkan pesan notifikasi sukses (flash message) bahwa mobil berhasil ditambahkan ke keranjang. Pemeriksaan melalui phpMyAdmin mengonfirmasi bahwa data header transaksi tersimpan dengan benar di tabel t_sewa dan relasi detail kendaraan tersimpan di tabel t_pilih menggunakan kode_sewa yang bersesuaian.
