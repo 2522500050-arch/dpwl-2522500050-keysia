@@ -403,3 +403,51 @@ Setelah halaman konfirmasi selesai dibuat, saya melakukan pengujian melalui brow
 - Informasi penyewaan ditampilkan sesuai data keranjang.
 - Perhitungan total sewa, DP 30%, dan sisa pembayaran ditampilkan.
 - Tombol kembali ke keranjang berfungsi sesuai tujuan.
+
+F.3.3. Menguji Proses Checkout
+
+Pada tahap ini, saya melakukan pengujian proses checkout untuk memastikan transaksi dapat diajukan kepada admin.
+
+Langkah-langkah pengujian:
+
+Membuka halaman konfirmasi transaksi dan memeriksa kembali seluruh rincian penyewaan.
+
+Menekan tombol Konfirmasi dan Ajukan Transaksi.
+
+Menyetujui dialog konfirmasi yang muncul.
+
+Memastikan aplikasi mengarahkan kembali ke halaman katalog dengan pesan bahwa transaksi berhasil diajukan dan menunggu persetujuan admin.
+
+Membuka phpMyAdmin dan memeriksa tabel t_sewa. Memastikan status transaksi berubah dari keranjang menjadi diajukan.
+
+Memeriksa tabel t_bayar dan memastikan terdapat satu catatan pembayaran DP dengan ketentuan:
+
+jns_byr = dp
+
+mtode_byr = transfer
+
+nominal = sesuai DP 30%
+
+sttus_byr = pending
+
+Memastikan transaksi yang sudah diajukan tidak dapat di-checkout kembali sebagai keranjang aktif.
+
+Hasil Pengujian:
+
+Proses checkout dapat dijalankan.
+
+Status transaksi berubah menjadi diajukan.
+
+Catatan pembayaran DP berhasil dibuat dengan metode transfer.
+
+Status pembayaran tercatat sebagai pending.
+
+Transaksi yang sudah diajukan tidak dapat diproses kembali sebagai keranjang aktif.
+
+Kesimpulan
+
+Berdasarkan pengerjaan bagian F.3, halaman konfirmasi transaksi dan proses checkout digunakan untuk memudahkan penyewa memeriksa rincian biaya sebelum mengajukan transaksi kepada admin.
+
+Sistem menampilkan total biaya sewa, uang muka sebesar 30%, dan sisa pembayaran. Setelah konfirmasi dilakukan, transaksi diajukan kepada admin dan pembayaran DP dicatat dengan status pending.
+
+Checkout pada P7 merupakan proses pengajuan transaksi, bukan bukti bahwa pembayaran telah dilakukan atau transaksi telah disetujui oleh admin.
