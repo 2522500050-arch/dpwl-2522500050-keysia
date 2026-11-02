@@ -326,3 +326,32 @@ D.2.1 & D.2.2. Penghitungan dan Pengiriman Jumlah Keranjang
   Pengecekan keranjang aktif milik penyewa dengan status 'keranjang' pada tabel t_sewa. Jika belum ada, sistem otomatis membuat header transaksi baru menggunakan format kode sewa harian (INV/YYYYMMDD/NN). Validasi tanggal mulai dan tanggal selesai sewa melalui helper hitungHariSewa() serta normalisasi waktu pengambilan. Pencegahan duplikasi kendaraan agar mobil yang sama tidak dapat dimasukkan dua kali ke dalam keranjang aktif yang sama. Penyimpanan detail sewa ke dalam tabel t_pilih dengan mencatat harga sewa (hrg_sewa) dan durasi hari (n_hari).
 
   2.Pengujian Fungsionalitas:Berhasil diuji melalui peramban (lokal) dengan login sebagai penyewa dan menekan tombol Tambah ke Keranjang pada halaman katalog maupun detail kendaraan. Sistem berhasil mengarahkan kembali halaman dan menampilkan pesan notifikasi sukses (flash message) bahwa mobil berhasil ditambahkan ke keranjang. Pemeriksaan melalui phpMyAdmin mengonfirmasi bahwa data header transaksi tersimpan dengan benar di tabel t_sewa dan relasi detail kendaraan tersimpan di tabel t_pilih menggunakan kode_sewa yang bersesuaian.
+
+  Bagian F.1: Membuat Halaman Isi Keranjang
+
+Pada tahap ini, pengembangan dilanjutkan dengan mengimplementasikan halaman antarmuka keranjang sewa (application/views/transaksi/keranjang.php) yang berfungsi untuk menampilkan informasi detail transaksi, daftar kendaraan yang dipilih, durasi sewa, subtotal harga, serta total biaya keseluruhan kepada penyewa
+
+Rangkuman Perubahan & Implementasi:
+1.Penyusunan Tampilan & Komponen Antarmuka:
+
+Membuat berkas application/views/transaksi/keranjang.php yang mengintegrasikan header dan navbar aplikasi yang sudah ada.
+
+Menampilkan ringkasan informasi transaksi meliputi Kode Transaksi dan Status Transaksi (berstatus 'keranjang'), serta formulir dinamis untuk memperbarui periode sewa (tanggal mulai dan tanggal selesai) serta waktu pengambilan.
+
+2.Integrasi Validasi Waktu & Select2:
+
+Menerapkan batasan minimal tanggal dan waktu pengambilan (minimal 2 jam dari waktu sekarang di zona waktu Asia/Jakarta) menggunakan pustaka JavaScript lokal maupun plugin Select2 untuk kemudahan pemilihan waktu.
+
+3.Tabel Rincian Kendaraan & Fitur Aksi:
+
+Menampilkan daftar mobil di dalam keranjang lengkap dengan foto, nomor polisi, harga sewa per hari, durasi dalam hari, serta subtotal biaya per item.
+
+Menyediakan tombol Hapus per baris kendaraan (menggunakan metode POST dengan konfirmasi JavaScript) untuk menghapus item spesifik dari keranjang, serta tombol Update Keranjang untuk memperbarui durasi dan periode sewa.
+
+Menyediakan tombol Checkout / Lihat Konfirmasi yang akan aktif apabila keranjang tidak kosong guna melanjutkan proses pengajuan transaksi ke tahap konfirmasi.
+
+4.Pengujian & Validasi:
+
+Memastikan penanganan variabel aman dari peringatan undefined variable dengan inisialisasi awal pada berkas view.
+
+Memastikan seluruh data yang dirender ke HTML telah melalui proses escaping menggunakan htmlspecialchars() untuk mencegah celah keamanan XSS.
