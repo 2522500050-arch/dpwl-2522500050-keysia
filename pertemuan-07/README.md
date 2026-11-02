@@ -293,3 +293,15 @@ Tampilan Navbar: Navbar berhasil dimuat tanpa galat serta menampilkan tautan pro
 Flash Message: Pesan notifikasi dari sesi transaksi dapat muncul dengan benar dan dapat ditutup menggunakan tombol tutup (dismiss).
 
 Tautan Keranjang: Ikon keranjang berhasil mengarahkan pengguna ke alamat http://localhost/dpwl-[NIM]/transaksi/keranjang.
+
+D.2.1 & D.2.2. Penghitungan dan Pengiriman Jumlah Keranjang
+
+- **Memperbarui `application/models/Transaksi_model.php` (Bagian D.2.1)**:
+  - Menambahkan method `getJumlahMobilKeranjang(string $userPlg): int` di dalam kelas `Transaksi_model`[cite: 204].
+  - Method ini berfungsi untuk menghitung total unit kendaraan yang saat ini tersimpan di dalam keranjang aktif (dengan `status_sewa = 'keranjang'`) khusus untuk akun penyewa yang sedang _login_[cite: 204].
+  - Implementasi ini menggunakan _prepared statement_ dan fungsi agregat `COUNT(*)` yang menggabungkan (_INNER JOIN_) tabel `t_pilih` dan `t_sewa` guna memastikan akurasi data kepemilikan keranjang[cite: 204].
+
+- **Memperbarui `application/controllers/Katalog_controller.php` (Bagian D.2.2)**:
+  - Mengintegrasikan pemanggilan `Transaksi_model` ke dalam `Katalog_controller` agar pengontrol katalog dapat mengakses fungsi terkait transaksi[cite: 204].
+  - Menyesuaikan method `index()` dan `detail()` dengan menyisipkan pengambilan data `jumlahKeranjang` berdasarkan username penyewa yang aktif[cite: 205, 206].
+  - Mengirimkan variabel `jumlahKeranjang` ke dalam _view_ katalog dan detail kendaraan[cite: 205, 206], sehingga lencana angka pada ikon keranjang belanja di bilah navigasi (_navbar_) dapat menampilkan jumlah muatan secara dinamis[cite: 206].
