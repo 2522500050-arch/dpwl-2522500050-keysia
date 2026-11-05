@@ -55,6 +55,12 @@ search"></i>
           <i class="fa fa-car"></i> <span>Manajemen Kendaraan</span>
         </a>
       </li>
+      <li>
+        <a href="<?= htmlspecialchars(site_url('admin/penyewa'), ENT_QUOTES, 'UTF-8') ?>">
+          <i class="fa fa-user"></i> <span>Manajemen Penyewa</span>
+        </a>
+      </li>
+    </ul>
     </ul>
 
     <!-- /.sidebar-menu -->
