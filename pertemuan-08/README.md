@@ -5,3 +5,12 @@ Dokumentasi Workflow: Mencatat setiap alur pengerjaan fitur baru (Manajemen Peny
 
 Tahap nomor 1
 Menambahkan satu item menu navigasi baru bernama Manajemen Penyewa pada tata letak (layout) navigasi khusus admin. Menu ini berfungsi mengarahkan pengguna ke halaman utama pengelolaan data penyewa.
+
+Tahap 2 - Soal 1: Menu Navigasi
+views/templates/sidebar.php : ditambah menu Manajemen Penyewa (ikon fa-address-card) setelah menu Manajemen Kendaraan.
+config/routes.php : ditambah route berikut.
+URL Tujuan
+admin/penyewa Mpenyewa_controller/index (daftar)
+admin/penyewa/tambah Mpenyewa_controller/tambah
+admin/penyewa/ubah/(:any) Mpenyewa_controller/ubah/$1
+admin/penyewa/hapus/(:any) Mpenyewa_controller/hapus/$1
