@@ -14,3 +14,16 @@ admin/penyewa Mpenyewa_controller/index (daftar)
 admin/penyewa/tambah Mpenyewa_controller/tambah
 admin/penyewa/ubah/(:any) Mpenyewa_controller/ubah/
 admin/penyewa/hapus/(:any) Mpenyewa_controller/hapus/
+
+Tahap 3 - Soal 3: Model (models/Penyewa_model.php)
+
+Method lama (create, findByUserPlg, findForLogin, getProfil, verifikasiPassword, updateProfil) tidak diubah karena dipakai registrasi, login, dan profil penyewa. Method baru untuk Admin, seluruhnya memakai MySQLi + prepared statement:
+
+Method Fungsi
+getAll() Membaca semua penyewa (tanpa hash password)
+findLengkap($userPlg)	Membaca satu penyewa lengkap
+createLengkap($data) INSERT penyewa beserta foto KTP dan SIM A
+updateLengkap($userPlg, $data, $hashBaru)	UPDATE; sandi diganti hanya jika hash baru diberikan
+delete($userPlg) DELETE berdasarkan primary key user_plg
+
+Kolom tabel t_penyewa: user_plg (PK), sandi, nik, nm_lngkp, no_hp, almt_lngkp, ft_ktp, ft_sim_a.
