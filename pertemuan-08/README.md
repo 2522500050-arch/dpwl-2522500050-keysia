@@ -82,3 +82,35 @@ Form tambah/ubah: username (hanya baca saat ubah), password dan konfirmasi, NIK,
 Tabel DataTables: No, Username, NIK, Nama, No. HP, Alamat, Foto KTP, Foto SIM A, Aksi.
 Semua keluaran memakai htmlspecialchars().
 Pesan flash dan pesan error validasi ditampilkan di atas form.
+
+Tahap 6 - Soal 5: Hasil pengujian
+
+Diuji di http://localhost/dpwl-2522500050/ setelah login admin. Isi kolom Hasil sesuai kenyataan pengujian (Berhasil / Gagal + catatan).
+
+No Skenario Hasil yang diharapkan Hasil
+1 Menu Manajemen Penyewa di sidebar diklik Halaman daftar penyewa terbuka
+2 Buka admin/penyewa tanpa login Diarahkan ke halaman login
+3 Tampilan daftar penyewa Tabel berisi seluruh data, foto tampil
+4 Tambah penyewa data valid + foto KTP dan SIM Data tersimpan, pesan sukses, foto tampil
+5 Tambah dengan username yang sudah ada Ditolak: "Username sudah digunakan."
+6 Tambah dengan NIK 15 digit atau berisi huruf Ditolak, pesan validasi NIK
+7 Tambah dengan password kurang dari 8 karakter Ditolak, pesan validasi password
+8 Tambah dengan konfirmasi password berbeda Ditolak, pesan konfirmasi tidak sama
+9 Tambah dengan no. HP berisi huruf Ditolak, pesan validasi no. HP
+10 Unggah berkas bukan gambar (misal .pdf atau .txt yang diganti nama .jpg) Ditolak, pesan format foto
+11 Unggah gambar lebih dari 5 MB Ditolak, pesan ukuran foto
+12 Tambah tanpa foto Data tersimpan, tabel menampilkan "Belum ada foto"
+13 Cek password di basis data Tersimpan sebagai hash (diawali $2y$)
+14 Ubah data tanpa mengisi password Data berubah, password lama tetap bisa login
+15 Ubah dengan password baru Password berubah, login penyewa dengan password baru berhasil
+16 Ubah dengan mengganti foto KTP Foto baru tampil, file foto lama terhapus dari uploads/penyewa/
+17 Hapus penyewa tanpa transaksi Data dan foto terhapus, pesan sukses
+18 Hapus penyewa yang punya transaksi Gagal dengan pesan jelas, data tidak rusak
+19 Muat ulang halaman setelah tambah/ubah/hapus Tidak ada kirim ulang form (PRG berjalan)
+20 Fitur lama: login admin, Manajemen Admin Tetap berjalan
+21 Fitur lama: Manajemen Kendaraan (tambah, ubah, hapus) Tetap berjalan
+22 Fitur lama: katalog, login/registrasi/profil penyewa, keranjang Tetap berjalan
+
+Catatan temuan dan perbaikan selama pengujian:
+
+(isi jika ada, misalnya: "Skenario 6 awalnya lolos, diperbaiki dengan ...")
