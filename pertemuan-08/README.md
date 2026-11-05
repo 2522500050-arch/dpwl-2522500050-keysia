@@ -114,3 +114,17 @@ No Skenario Hasil yang diharapkan Hasil
 Catatan temuan dan perbaikan selama pengujian:
 
 (isi jika ada, misalnya: "Skenario 6 awalnya lolos, diperbaiki dengan ...")
+
+Tahap 7 - Soal 6: Ekspor basis data dan struktur berkas
+
+Basis data diekspor dari phpMyAdmin (Export, metode Custom, format SQL) setelah pengujian selesai dan disimpan di repositori sebagai: ISI-NAMA-FILE.sql.
+
+Berkas yang ditambah atau diubah pada UTS ini:
+
+Berkas Status
+application/controllers/Mpenyewa_controller.php Baru
+application/views/admin/penyewa_view.php Baru
+application/models/Penyewa_model.php Diubah (method baru ditambahkan)
+application/config/routes.php Diubah (4 route baru)
+application/views/templates/sidebar.php Diubah (menu baru)
+application/controllers/Mobil_controller.php Diubah (perbaikan bug tambah)
