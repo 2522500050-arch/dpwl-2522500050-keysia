@@ -73,3 +73,12 @@ Refresh halaman setelah submit formulir tidak memicu pengiriman ulang data.
 Berkas foto KTP dan SIM A tersimpan rapi di folder uploads/ dengan nama unik.
 
 Ungguhan berkas non-gambar (seperti .exe atau .pdf) berhasil ditolak oleh sistem dengan pesan peringatan yang sesuai.
+
+Tahap 5 - Soal 2: View (views/admin/penyewa_view.php)
+
+Mengikuti pola mobil_view.php: form dan tabel dalam satu View.
+
+Form tambah/ubah: username (hanya baca saat ubah), password dan konfirmasi, NIK, nama, no. HP, alamat, unggah Foto KTP dan Foto SIM A dengan pratinjau.
+Tabel DataTables: No, Username, NIK, Nama, No. HP, Alamat, Foto KTP, Foto SIM A, Aksi.
+Semua keluaran memakai htmlspecialchars().
+Pesan flash dan pesan error validasi ditampilkan di atas form.
