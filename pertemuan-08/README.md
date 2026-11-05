@@ -12,5 +12,5 @@ config/routes.php : ditambah route berikut.
 URL Tujuan
 admin/penyewa Mpenyewa_controller/index (daftar)
 admin/penyewa/tambah Mpenyewa_controller/tambah
-admin/penyewa/ubah/(:any) Mpenyewa_controller/ubah/$1
-admin/penyewa/hapus/(:any) Mpenyewa_controller/hapus/$1
+admin/penyewa/ubah/(:any) Mpenyewa_controller/ubah/
+admin/penyewa/hapus/(:any) Mpenyewa_controller/hapus/

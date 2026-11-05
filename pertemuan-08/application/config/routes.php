@@ -40,3 +40,9 @@ $route['transaksi/perbarui-periode'] = 'Transaksi_controller/perbaruiPeriode';
 $route['transaksi/hapus'] = 'Transaksi_controller/hapus';
 $route['transaksi/hapus/(:any)'] = 'Transaksi_controller/hapus/$1';
 $route['transaksi/checkout'] = 'Transaksi_controller/checkout';
+
+// UTS P8 - Manajemen Penyewa (Admin)
+$route['admin/penyewa'] = 'Mpenyewa_controller/index';
+$route['admin/penyewa/tambah'] = 'Mpenyewa_controller/tambah';
+$route['admin/penyewa/ubah/(:any)'] = 'Mpenyewa_controller/ubah/$1';
+$route['admin/penyewa/hapus/(:any)'] = 'Mpenyewa_controller/hapus/$1';
