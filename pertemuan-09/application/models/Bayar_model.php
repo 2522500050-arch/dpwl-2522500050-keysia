@@ -135,6 +135,7 @@ class Bayar_model
       $params[] = $filterStatus;
     }
 
+    // Menggunakan t_penyewa sesuai database lokal Anda
     $sql = "SELECT
               b.kode_bayar, b.tgl_wkt_byr, b.ft_byr, b.mtode_byr,
               b.jns_byr, b.nominal, b.sttus_byr, b.tgl_wkt_ver, b.kode_sewa,
@@ -142,7 +143,7 @@ class Bayar_model
               plg.nm_lngkp, plg.no_hp
             FROM t_bayar b
             INNER JOIN t_sewa s ON s.kode_sewa = b.kode_sewa
-            INNER JOIN t_pelanggan plg ON plg.user_plg = s.user_plg
+            INNER JOIN t_penyewa plg ON plg.user_plg = s.user_plg
             $where
             ORDER BY
               CASE b.sttus_byr WHEN 'pending' THEN 0 ELSE 1 END,
@@ -164,6 +165,7 @@ class Bayar_model
 
   public function getDetailAdmin(string $kodeBayar): ?array
   {
+    // Menggunakan t_penyewa sesuai database lokal Anda
     $sql = "SELECT
               b.kode_bayar, b.tgl_wkt_byr, b.ft_byr, b.mtode_byr,
               b.jns_byr, b.nominal, b.sttus_byr, b.tgl_wkt_ver, b.kode_sewa,
@@ -171,7 +173,7 @@ class Bayar_model
               plg.nm_lngkp, plg.nik, plg.no_hp, plg.almt_lngkp
             FROM t_bayar b
             INNER JOIN t_sewa s ON s.kode_sewa = b.kode_sewa
-            INNER JOIN t_pelanggan plg ON plg.user_plg = s.user_plg
+            INNER JOIN t_penyewa plg ON plg.user_plg = s.user_plg
             WHERE b.kode_bayar = ? AND b.jns_byr = 'dp'
             LIMIT 1";
 
@@ -204,7 +206,6 @@ class Bayar_model
     $this->db->begin_transaction();
 
     try {
-      // Kunci baris pembayaran agar tidak terjadi race condition
       $stmt = $this->db->prepare(
         "SELECT b.kode_bayar, b.ft_byr, b.sttus_byr, b.kode_sewa, s.status_sewa
          FROM t_bayar b
@@ -224,7 +225,7 @@ class Bayar_model
         throw new InvalidArgumentException('Data pembayaran tidak ditemukan.');
       }
       if ($row['sttus_byr'] !== 'pending') {
-        throw new InvalidArgumentException('Pembayaran ini sudah diverifikasi sebelumnya dan tidak dapat diproses ulang.');
+        throw new InvalidArgumentException('Pembayaran ini sudah diverifikasi sebelumnya.');
       }
       if (empty($row['ft_byr'])) {
         throw new InvalidArgumentException('Bukti pembayaran belum diunggah oleh penyewa.');
@@ -264,7 +265,6 @@ class Bayar_model
       }
       $stmtSewa->close();
 
-      // Jika pembayaran ditolak, kembalikan status mobil agar tersedia kembali
       if ($keputusan === 'tolak') {
         $stmtMobil = $this->db->prepare(
           "UPDATE t_mobil m

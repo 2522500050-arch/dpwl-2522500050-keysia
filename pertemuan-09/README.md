@@ -277,3 +277,111 @@ SELECT kode_bayar, ft_byr, tgl_wkt_byr, sttus_byr, nominal, tgl_wkt_ver FROM t_b
 ```
 
 `nominal` **tidak boleh** berubah, `sttus_byr` tetap `pending`, `tgl_wkt_ver` tetap `NULL`.
+
+# Tahap 3: Verifikasi Pembayaran oleh Admin
+
+**Tujuan:** admin melihat pembayaran DP beserta bukti transfer, lalu menerima atau menolak.
+Perubahan `t_bayar` dan `t_sewa` dilakukan dalam **satu transaksi database**.
+
+**Prasyarat:** Tahap 2 sudah terpasang dan lolos uji (file `Bayar_model.php`, `bukti_helper.php`, `csrf_helper.php` dipakai ulang di sini).
+
+## A. File pada tahap ini
+
+| Status | File                                                 | Peran (MVC)                                                          |
+| ------ | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| BARU   | `application/models/Verifikasi_model.php`            | **Model**: daftar, detail, dan `proses()` (transaksi DB)             |
+| BARU   | `application/controllers/Verifikasi_controller.php`  | **Controller**: hak akses admin, validasi, PRG                       |
+| BARU   | `application/views/admin/verifikasi_view.php`        | **View**: daftar verifikasi (filter Menunggu/Diterima/Ditolak/Semua) |
+| BARU   | `application/views/admin/verifikasi_detail_view.php` | **View**: penyewa, transaksi, nominal, bukti, tombol Terima/Tolak    |
+| UBAH   | `application/config/routes.php`                      | **Kumulatif**: berisi route Tahap 2 + Tahap 3                        |
+| UBAH   | `application/views/templates/sidebar.php`            | Menu _Verifikasi Pembayaran_                                         |
+
+> `routes.php` di folder ini sudah memuat route Tahap 2. Jika Anda menimpa file Anda, tidak ada route yang hilang.
+
+## B. Route
+
+| URL                                                       | Method | Controller::method                       |
+| --------------------------------------------------------- | ------ | ---------------------------------------- |
+| `/admin/verifikasi?status=pending\|valid\|invalid\|semua` | GET    | `Verifikasi_controller::index`           |
+| `/admin/verifikasi/detail?kode_bayar=PAY/...`             | GET    | `::detail`                               |
+| `/admin/verifikasi/bukti?kode_bayar=PAY/...`              | GET    | `::bukti` (menampilkan gambar bukti)     |
+| `/admin/verifikasi/proses`                                | POST   | `::proses` (terima/tolak, lalu redirect) |
+
+## C. Aturan perubahan status
+
+| Keputusan | `t_bayar.sttus_byr` | `t_bayar.tgl_wkt_ver` | `t_sewa.status_sewa` |
+| --------- | ------------------- | --------------------- | -------------------- |
+| Terima    | `valid`             | `NOW()`               | `disetujui`          |
+| Tolak     | `invalid`           | `NOW()`               | `ditolak`            |
+
+Alur `Verifikasi_model::proses()`:
+
+```
+begin_transaction
+  SELECT ... FROM t_bayar JOIN t_sewa WHERE kode_bayar = ? FOR UPDATE   -- kunci baris
+  tolak jika: tidak ada | sudah diverifikasi | ft_byr kosong | status_sewa <> 'diajukan'
+  UPDATE t_bayar  SET sttus_byr = ?, tgl_wkt_ver = NOW() WHERE ... AND sttus_byr = 'pending' ...   (harus 1 baris)
+  UPDATE t_sewa   SET status_sewa = ?                    WHERE ... AND status_sewa = 'diajukan'    (harus 1 baris)
+commit        -- bila ada kegagalan di mana pun: rollback, tidak ada data yang berubah
+```
+
+## D. Aturan bisnis → implementasi
+
+| Aturan                                      | Di mana                                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Admin wajib login                           | `wajibAdmin()` memakai `is_admin_logged_in()`                                          |
+| Penyewa tidak boleh masuk menu admin        | Penyewa yang login → HTTP 403; yang belum login → redirect ke `auth/login`             |
+| Bukti wajib ada sebelum verifikasi          | Tombol Terima/Tolak tidak ditampilkan tanpa bukti **dan** `proses()` menolak di server |
+| Yang sudah diverifikasi tidak diproses lagi | Cek status di Model dalam transaksi + `AND sttus_byr = 'pending'` pada `UPDATE`        |
+| Admin dapat membuka bukti                   | Route `admin/verifikasi/bukti` (folder upload tertutup untuk akses langsung)           |
+| Konsistensi `t_bayar` dan `t_sewa`          | Satu transaksi DB; `rollback` jika salah satu gagal                                    |
+| PRG                                         | `proses()` selalu berakhir dengan redirect ke halaman detail + flash                   |
+| CSRF                                        | Token pada formulir keputusan diperiksa dengan `hash_equals`                           |
+
+## E. Cara memasang
+
+1. Salin semua file dari folder ini ke proyek (path sama).
+2. Login admin; menu **Verifikasi Pembayaran** muncul di sidebar.
+3. Siapkan data uji: minimal 3 pembayaran `pending` (2 dengan bukti, 1 tanpa bukti).
+
+## F. Pengujian Tahap 3
+
+| No  | Skenario                | Cara uji                                                                     | Diharapkan                                                           | Hasil |
+| --- | ----------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----- |
+| 8   | Daftar verifikasi       | Buka `/admin/verifikasi`                                                     | Pembayaran `pending` tampil                                          |       |
+| 9   | Lihat bukti             | _Periksa_ → klik gambar / _Buka ukuran penuh_                                | Gambar bukti terbuka                                                 |       |
+| 10  | Terima                  | Klik _Terima_ → OK                                                           | `sttus_byr = valid`, `status_sewa = disetujui`, `tgl_wkt_ver` terisi |       |
+| 11  | Tolak                   | Klik _Tolak_ → OK (pada pembayaran lain)                                     | `invalid` dan `ditolak`, `tgl_wkt_ver` terisi                        |       |
+| 12  | Verifikasi tanpa bukti  | Lihat detail pembayaran tanpa bukti; lalu kirim POST manual (lihat di bawah) | Tombol tidak ada; POST manual ditolak dengan pesan                   |       |
+| 13  | Verifikasi ulang        | Kirim POST manual untuk pembayaran yang sudah diproses                       | Ditolak: "sudah diverifikasi"                                        |       |
+| 14  | Penyewa buka menu admin | Login penyewa (tanpa login admin), buka `/admin/verifikasi`                  | HTTP 403                                                             |       |
+
+**Cara kirim POST manual (skenario 12 dan 13).** Buka detail satu pembayaran `pending` yang **punya** bukti, buka
+_DevTools → Console_, salin nilai token dengan `document.querySelector('[name=csrf_token]').value`, lalu jalankan
+(ganti `TOKEN` dan `KODE`; nama folder disesuaikan):
+
+```js
+fetch("/dpwl-2522500050/admin/verifikasi/proses", {
+  method: "POST",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: new URLSearchParams({
+    csrf_token: "TOKEN",
+    kode_bayar: "PAY/20261118/02",
+    keputusan: "terima",
+  }),
+  credentials: "same-origin",
+})
+  .then((r) => r.url)
+  .then(console.log);
+```
+
+Token berlaku untuk seluruh sesi, jadi bisa dipakai untuk `KODE` lain (yang tanpa bukti, atau yang sudah diproses).
+Muat ulang halaman detail `KODE` tersebut untuk melihat pesan penolakan.
+
+Cek konsistensi data setelah setiap uji:
+
+```sql
+SELECT b.kode_bayar, b.sttus_byr, b.tgl_wkt_ver, s.status_sewa
+FROM t_bayar b JOIN t_sewa s ON s.kode_sewa = b.kode_sewa
+ORDER BY b.kode_bayar;
+```
