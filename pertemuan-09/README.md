@@ -385,3 +385,474 @@ SELECT b.kode_bayar, b.sttus_byr, b.tgl_wkt_ver, s.status_sewa
 FROM t_bayar b JOIN t_sewa s ON s.kode_sewa = b.kode_sewa
 ORDER BY b.kode_bayar;
 ```
+
+# README TAHAP 4
+
+## Integrasi dan Pengujian Fitur Pembayaran P9
+
+### 1. Tujuan Tahap 4
+
+Tahap 4 merupakan tahap integrasi dan pengujian fitur pembayaran pada aplikasi penyewaan kendaraan.
+
+Pada tahap ini dilakukan pemeriksaan terhadap seluruh alur pembayaran mulai dari proses checkout oleh penyewa, upload bukti pembayaran, sampai proses verifikasi pembayaran oleh admin.
+
+Alur yang diuji:
+
+```text
+Login Penyewa
+      ↓
+Katalog
+      ↓
+Keranjang
+      ↓
+Checkout
+      ↓
+Pembayaran DP
+      ↓
+Upload Bukti Pembayaran
+      ↓
+Verifikasi Admin
+      ↓
+Terima / Tolak
+      ↓
+Perubahan Status Pembayaran dan Sewa
+```
+
+---
+
+## 2. Persiapan Pengujian
+
+Sebelum melakukan pengujian, pastikan:
+
+- Aplikasi dapat dijalankan.
+- Database sudah aktif.
+- Apache dan MySQL/Laragon sudah berjalan.
+- Penyewa dapat melakukan login.
+- Admin dapat melakukan login.
+- Fitur checkout dapat digunakan.
+- Folder `uploads/bayar/` sudah tersedia.
+- File `.htaccess` pada folder `uploads/bayar/` sudah tersedia.
+
+Struktur folder:
+
+```text
+uploads/
+└── bayar/
+    └── .htaccess
+```
+
+---
+
+## 3. Pengujian Checkout
+
+### Langkah
+
+1. Login sebagai penyewa.
+2. Buka katalog kendaraan.
+3. Pilih kendaraan.
+4. Masukkan kendaraan ke keranjang.
+5. Lanjutkan ke checkout.
+6. Selesaikan proses checkout.
+
+### Hasil yang Diharapkan
+
+Data pembayaran berhasil dibuat pada tabel `t_bayar`.
+
+Status awal pembayaran:
+
+```text
+sttus_byr = pending
+```
+
+Bukti pembayaran:
+
+```text
+ft_byr = NULL
+```
+
+Waktu verifikasi:
+
+```text
+tgl_wkt_ver = NULL
+```
+
+---
+
+## 4. Pemeriksaan Database
+
+Gunakan query:
+
+```sql
+SELECT
+    kode_bayar,
+    kode_sewa,
+    nominal,
+    mtode_byr,
+    jns_byr,
+    sttus_byr,
+    ft_byr,
+    tgl_wkt_byr,
+    tgl_wkt_ver
+FROM t_bayar
+ORDER BY kode_bayar DESC;
+```
+
+Data pembayaran yang baru dibuat harus memiliki:
+
+```text
+jns_byr     = dp
+sttus_byr   = pending
+ft_byr      = NULL
+tgl_wkt_ver = NULL
+```
+
+---
+
+## 5. Pengujian Upload Bukti Pembayaran
+
+### Langkah
+
+1. Login sebagai penyewa.
+2. Masuk ke menu **Pembayaran Saya**.
+3. Pilih salah satu pembayaran.
+4. Buka halaman detail pembayaran.
+5. Pilih file bukti pembayaran.
+6. Klik **Upload Bukti**.
+
+Format file yang diuji:
+
+```text
+.jpg
+.jpeg
+.png
+.webp
+```
+
+Ukuran maksimal:
+
+```text
+2 MB
+```
+
+### Hasil yang Diharapkan
+
+Bukti pembayaran berhasil disimpan pada:
+
+```text
+uploads/bayar/
+```
+
+Database juga berubah sehingga:
+
+```text
+ft_byr       = nama file bukti
+tgl_wkt_byr  = waktu upload
+sttus_byr    = pending
+```
+
+---
+
+## 6. Pengujian File Tidak Valid
+
+Pengujian dilakukan menggunakan file yang tidak sesuai dengan ketentuan.
+
+Contoh:
+
+```text
+.pdf
+.exe
+.zip
+```
+
+atau file gambar dengan ukuran lebih dari:
+
+```text
+2 MB
+```
+
+### Hasil yang Diharapkan
+
+Sistem menolak file tersebut dan menampilkan pesan bahwa file tidak dapat digunakan.
+
+File yang tidak valid tidak boleh tersimpan sebagai bukti pembayaran.
+
+---
+
+## 7. Pengujian Akses Bukti Pembayaran
+
+Bukti pembayaran tidak boleh diakses secara langsung melalui URL folder:
+
+```text
+/uploads/bayar/
+```
+
+Bukti harus ditampilkan melalui controller yang melakukan pemeriksaan kepemilikan dan nama file.
+
+### Hasil yang Diharapkan
+
+Akses langsung ke folder upload ditolak.
+
+Bukti pembayaran hanya dapat ditampilkan melalui fitur aplikasi.
+
+---
+
+## 8. Pengujian Verifikasi Admin
+
+### Langkah
+
+1. Login sebagai admin.
+2. Buka menu **Verifikasi Pembayaran**.
+3. Pilih pembayaran dengan status `pending`.
+4. Buka detail pembayaran.
+5. Periksa informasi pembayaran.
+6. Periksa bukti pembayaran.
+
+### Hasil yang Diharapkan
+
+Admin dapat melihat:
+
+- Kode pembayaran.
+- Kode sewa.
+- Nama penyewa.
+- Nominal DP.
+- Metode pembayaran.
+- Status pembayaran.
+- Bukti pembayaran.
+
+---
+
+## Pengujian Terima Pembayaran
+
+### Langkah
+
+1. Admin membuka detail pembayaran.
+2. Memastikan bukti pembayaran tersedia.
+3. Klik tombol **Terima**.
+
+### Hasil yang Diharapkan
+
+Status pembayaran berubah:
+
+```text
+pending
+   ↓
+valid
+```
+
+Status transaksi berubah:
+
+```text
+diajukan
+   ↓
+disetujui
+```
+
+Waktu verifikasi:
+
+```text
+tgl_wkt_ver
+```
+
+terisi dengan waktu proses verifikasi.
+
+---
+
+## Pengujian Tolak Pembayaran
+
+### Langkah
+
+1. Admin membuka detail pembayaran.
+2. Memeriksa bukti pembayaran.
+3. Klik tombol **Tolak**.
+
+### Hasil yang Diharapkan
+
+Status pembayaran berubah:
+
+```text
+pending
+   ↓
+invalid
+```
+
+Status transaksi berubah:
+
+```text
+diajukan
+   ↓
+ditolak
+```
+
+Waktu verifikasi juga tercatat pada:
+
+```text
+tgl_wkt_ver
+```
+
+---
+
+## Pengujian Pembayaran yang Sudah Diverifikasi
+
+Pembayaran yang sudah memiliki status:
+
+```text
+valid
+```
+
+atau:
+
+```text
+invalid
+```
+
+tidak boleh diverifikasi kembali.
+
+### Hasil yang Diharapkan
+
+Sistem menolak proses verifikasi ulang.
+
+Pesan yang ditampilkan:
+
+```text
+Pembayaran ini sudah diverifikasi dan tidak dapat diproses kembali.
+```
+
+---
+
+## Pengujian Kepemilikan Pembayaran
+
+Penyewa hanya boleh melihat pembayaran miliknya sendiri.
+
+Sistem melakukan pemeriksaan berdasarkan:
+
+```text
+user_plg
+```
+
+### Hasil yang Diharapkan
+
+Penyewa tidak dapat melihat detail pembayaran milik penyewa lain.
+
+Jika pembayaran tidak dimiliki oleh akun tersebut, sistem menolak akses.
+
+---
+
+## Pengujian CSRF
+
+Form upload bukti pembayaran dan form verifikasi admin menggunakan:
+
+```text
+csrf_token
+```
+
+### Hasil yang Diharapkan
+
+Jika token CSRF tidak valid, proses ditolak oleh sistem.
+
+Contoh pesan:
+
+```text
+Token CSRF tidak valid.
+```
+
+---
+
+## Pemeriksaan Database Setelah Verifikasi
+
+Gunakan query:
+
+```sql
+SELECT
+    b.kode_bayar,
+    b.kode_sewa,
+    b.sttus_byr,
+    b.ft_byr,
+    b.tgl_wkt_byr,
+    b.tgl_wkt_ver,
+    s.status_sewa
+FROM t_bayar b
+INNER JOIN t_sewa s
+    ON s.kode_sewa = b.kode_sewa
+ORDER BY b.kode_bayar DESC;
+```
+
+### Jika pembayaran diterima
+
+Hasil yang diharapkan:
+
+```text
+t_bayar.sttus_byr = valid
+t_sewa.status_sewa = disetujui
+```
+
+### Jika pembayaran ditolak
+
+Hasil yang diharapkan:
+
+```text
+t_bayar.sttus_byr = invalid
+t_sewa.status_sewa = ditolak
+```
+
+---
+
+## Skenario Pengujian
+
+|  No | Skenario                      | Hasil yang Diharapkan |
+| --: | ----------------------------- | --------------------- |
+|   1 | Login penyewa                 | Berhasil              |
+|   2 | Checkout kendaraan            | Berhasil              |
+|   3 | Membuat pembayaran DP         | Status `pending`      |
+|   4 | Membuka daftar pembayaran     | Data tampil           |
+|   5 | Membuka detail pembayaran     | Detail tampil         |
+|   6 | Upload JPG                    | Berhasil              |
+|   7 | Upload PNG                    | Berhasil              |
+|   8 | Upload WEBP                   | Berhasil              |
+|   9 | Upload file > 2 MB            | Ditolak               |
+|  10 | Upload file tidak sesuai      | Ditolak               |
+|  11 | Login admin                   | Berhasil              |
+|  12 | Membuka verifikasi pembayaran | Data tampil           |
+|  13 | Menerima pembayaran           | Status `valid`        |
+|  14 | Menolak pembayaran            | Status `invalid`      |
+|  15 | Verifikasi ulang pembayaran   | Ditolak               |
+
+---
+
+## Pemeriksaan Akhir
+
+Pastikan seluruh fitur berikut sudah berjalan:
+
+```text
+[✓] Checkout
+[✓] Pembayaran DP
+[✓] Daftar pembayaran
+[✓] Detail pembayaran
+[✓] Upload bukti pembayaran
+[✓] Validasi tipe file
+[✓] Validasi ukuran file
+[✓] Proteksi folder upload
+[✓] Verifikasi admin
+[✓] Terima pembayaran
+[✓] Tolak pembayaran
+[✓] Perubahan status pembayaran
+[✓] Perubahan status sewa
+[✓] CSRF protection
+[✓] Pemeriksaan kepemilikan pembayaran
+```
+
+## Kesimpulan
+
+Tahap 4 merupakan tahap akhir untuk memastikan fitur pembayaran P9 dapat digunakan dengan baik.
+
+Pengujian mencakup proses:
+
+```text
+Checkout
+→ Pembayaran DP
+→ Upload Bukti
+→ Verifikasi Admin
+→ Terima / Tolak
+→ Perubahan Status
+```
+
+Dengan selesainya tahap ini, fitur pembayaran dan verifikasi dapat dinyatakan telah melalui proses integrasi dan pengujian sesuai skenario yang telah ditentukan.
