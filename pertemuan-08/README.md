@@ -128,6 +128,8 @@ application/models/Penyewa_model.php Diubah (method baru ditambahkan)
 application/config/routes.php Diubah (4 route baru)
 application/views/templates/sidebar.php Diubah (menu baru)
 application/controllers/Mobil_controller.php Diubah (perbaikan bug tambah)
+<<<<<<< HEAD
+=======
 
 -- phpMyAdmin SQL Dump
 -- version 5.2.0
@@ -487,3 +489,4 @@ COMMIT;
 /_!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT _/;
 /_!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS _/;
 /_!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION _/;
+>>>>>>> refs/remotes/origin/main
