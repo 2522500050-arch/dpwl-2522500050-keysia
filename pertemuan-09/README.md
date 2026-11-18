@@ -187,3 +187,4 @@ Di Laragon: _Menu → PHP → php.ini_, lalu cari:
 - `upload_max_filesize` (batas aplikasi P9 adalah 2 MB; jika nilai ini lebih kecil, PHP menolak lebih dulu)
 - `post_max_size` (harus ≥ `upload_max_filesize`)
 - `extension=fileinfo` aktif (sudah dipakai upload KTP/SIM, jadi seharusnya aktif)
+  satu satu
