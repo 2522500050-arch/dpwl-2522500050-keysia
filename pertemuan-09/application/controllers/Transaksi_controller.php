@@ -1,3 +1,4 @@
+
 <?php
 
 require_once APPPATH . 'models/Transaksi_model.php';
@@ -127,12 +128,15 @@ class Transaksi_controller extends Controller
       ? $pesan
       : 'Permintaan transaksi belum berhasil. Periksa data dan coba kembali.';
   }
+
   public function keranjang(string $kodeSewa = ''): void
   {
     $userPlg = $this->wajibLoginPenyewa();
     $this->wajibMetode('GET');
 
-    $kodeSewa = trim($kodeSewa !== '' ? $kodeSewa : (string) ($_GET['kode_sewa'] ?? ''));
+    $kodeSewa = trim(
+      $kodeSewa !== '' ? $kodeSewa : (string) ($_GET['kode_sewa'] ?? '')
+    );
 
     if ($kodeSewa === '') {
       try {
@@ -159,7 +163,10 @@ class Transaksi_controller extends Controller
     }
 
     try {
-      $keranjang = $this->transaksiModel->getKeranjang($kodeSewa, $userPlg);
+      $keranjang = $this->transaksiModel->getKeranjang(
+        $kodeSewa,
+        $userPlg
+      );
 
       if ($keranjang === null) {
         http_response_code(404);
@@ -172,10 +179,12 @@ class Transaksi_controller extends Controller
       $this->view('transaksi/keranjang', [
         'keranjang' => $keranjang,
         'flash' => $flash,
-        'jumlahKeranjang' => $this->transaksiModel->getJumlahMobilKeranjang($userPlg)
+        'jumlahKeranjang' => $this->transaksiModel
+          ->getJumlahMobilKeranjang($userPlg)
       ]);
     } catch (Throwable $e) {
       error_log('Tampilan keranjang gagal: ' . $e->getMessage());
+
       http_response_code(500);
       exit('Keranjang belum dapat ditampilkan. Silakan coba kembali.');
     }
@@ -195,6 +204,7 @@ class Transaksi_controller extends Controller
       http_response_code(400);
       exit('Kode transaksi wajib diisi.');
     }
+
     try {
       $this->transaksiModel->perbaruiPeriodeKeranjang(
         $kodeSewa,
@@ -271,6 +281,7 @@ class Transaksi_controller extends Controller
 
     if ($metode === 'GET') {
       $this->wajibMetode('GET');
+
       $kodeSewa = trim((string) ($_GET['kode_sewa'] ?? ''));
 
       if ($kodeSewa === '') {
@@ -282,12 +293,14 @@ class Transaksi_controller extends Controller
       }
 
       try {
-        $keranjang = $this->transaksiModel->getKeranjang($kodeSewa, $userPlg);
+        $keranjang = $this->transaksiModel->getKeranjang(
+          $kodeSewa,
+          $userPlg
+        );
 
         if ($keranjang === null) {
           http_response_code(404);
-          exit('Keranjang tidak ditemukan, bukan milik akun ini, atau tidak lagi berstatus 
-keranjang.');
+          exit('Keranjang tidak ditemukan, bukan milik akun ini, atau tidak lagi berstatus keranjang.');
         }
 
         if (empty($keranjang['detail'])) {
@@ -307,17 +320,21 @@ keranjang.');
           'total' => $total,
           'dp' => $dp,
           'sisa' => $sisa,
-          'jumlahKeranjang' => $this->transaksiModel->getJumlahMobilKeranjang($userPlg)
+          'jumlahKeranjang' => $this->transaksiModel
+            ->getJumlahMobilKeranjang($userPlg)
         ]);
+
         return;
       } catch (Throwable $e) {
         error_log('Tampilan konfirmasi checkout gagal: ' . $e->getMessage());
+
         http_response_code(500);
         exit('Konfirmasi checkout belum dapat ditampilkan. Silakan coba kembali.');
       }
     }
 
     $this->wajibMetode('POST');
+
     $kodeSewa = trim((string) ($_POST['kode_sewa'] ?? ''));
 
     if ($kodeSewa === '') {
@@ -326,8 +343,8 @@ keranjang.');
     }
 
     try {
-      // Model memvalidasi ulang pemilik, status keranjang, detail, periode, 
-      // dan ketersediaan kendaraan di dalam transaksi database. 
+      // Model memvalidasi ulang pemilik, status keranjang, detail,
+      // periode, dan ketersediaan kendaraan di dalam transaksi database.
       $berhasil = $this->transaksiModel->checkout($kodeSewa, $userPlg);
 
       if (!$berhasil) {
@@ -338,9 +355,14 @@ keranjang.');
         );
       }
 
-      $_SESSION['flash_penyewa_nav'] =
-        'Checkout berhasil. Transaksi diajukan dan menunggu persetujuan admin.';
-      header('Location: ' . site_url('katalog'));
+      // Notifikasi checkout berhasil dan pembayaran DP 30%.
+      $_SESSION['flash_pembayaran'] = [
+        'type' => 'success',
+        'message' => 'Checkout berhasil. Silakan unggah bukti pembayaran DP sebesar 30%.'
+      ];
+
+      // Arahkan penyewa ke halaman pembayaran.
+      header('Location: ' . site_url('pembayaran'));
       exit;
     } catch (Throwable $e) {
       error_log('Checkout transaksi gagal: ' . $e->getMessage());

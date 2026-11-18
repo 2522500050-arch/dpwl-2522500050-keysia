@@ -1,6 +1,6 @@
 # pertemuan-09
 
-Tahap 1: Analisis Source Code P7 / UTS
+# Tahap 1: Analisis Source Code P7 / UTS
 
 **Tujuan:** memahami aplikasi yang ada sebelum menulis kode P9, dan menyimpan kondisi awal (baseline).
 **Perubahan kode pada tahap ini:** tidak ada. Tahap ini hanya analisis, pengecekan database, dan commit baseline.
@@ -188,3 +188,92 @@ Di Laragon: _Menu → PHP → php.ini_, lalu cari:
 - `post_max_size` (harus ≥ `upload_max_filesize`)
 - `extension=fileinfo` aktif (sudah dipakai upload KTP/SIM, jadi seharusnya aktif)
   satu satu.
+
+  # Tahap 2: Pembayaran Awal oleh Penyewa
+
+  **Tujuan:** penyewa dapat melihat rincian DP dan mengunggah bukti transfer. Status pembayaran tetap `pending`.
+
+## A. File pada tahap ini
+
+Struktur folder di sini **sama dengan struktur aplikasi**. Salin ke folder proyek Anda dan timpa bila diminta.
+
+| Status | File                                                | Peran (MVC)                                                             |
+| ------ | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| BARU   | `application/models/Bayar_model.php`                | **Model**: baca & ubah `t_bayar` milik penyewa                          |
+| BARU   | `application/controllers/Pembayaran_controller.php` | **Controller**: login, kepemilikan, validasi berkas, aturan bisnis, PRG |
+| BARU   | `application/views/pembayaran/index.php`            | **View**: daftar pembayaran saya                                        |
+| BARU   | `application/views/pembayaran/detail.php`           | **View**: rincian transaksi, DP, status, formulir unggah                |
+| BARU   | `application/helpers/bukti_helper.php`              | Helper berkas bukti (lokasi, nama valid, hapus, kirim)                  |
+| BARU   | `application/helpers/csrf_helper.php`               | Helper token CSRF untuk formulir POST baru                              |
+| BARU   | `uploads/bayar/.htaccess`                           | Menutup akses langsung ke bukti pembayaran                              |
+| UBAH   | `application/config/routes.php`                     | Menambah 4 route `pembayaran/...`                                       |
+| UBAH   | `application/views/katalog/navbar.php`              | Menambah ikon _Pembayaran Saya_                                         |
+| UBAH   | `application/controllers/Transaksi_controller.php`  | Setelah checkout, arahkan ke halaman pembayaran                         |
+
+> Folder `uploads/bayar/` akan dibuat otomatis saat unggah pertama. Anda tetap perlu menyalin `.htaccess`-nya.
+> Pada Windows, buat dulu folder `uploads\bayar\` lalu letakkan `.htaccess` di dalamnya.
+
+Perubahan pada file lama sangat kecil. Bandingkan dengan `git diff`:
+
+- `routes.php`: hanya penambahan di akhir file.
+- `navbar.php`: satu blok `<a>` ikon kartu kredit sebelum "Ikon Profil Penyewa".
+- `Transaksi_controller.php`: pada `checkout()` (POST) pesan sukses dan tujuan redirect berubah dari `katalog` ke `pembayaran`.
+
+## B. Route
+
+| URL                                     | Method | Controller::method             | Fungsi                             |
+| --------------------------------------- | ------ | ------------------------------ | ---------------------------------- |
+| `/pembayaran`                           | GET    | `Pembayaran_controller::index` | Daftar pembayaran DP milik penyewa |
+| `/pembayaran/detail?kode_bayar=PAY/...` | GET    | `::detail`                     | Rincian + formulir unggah          |
+| `/pembayaran/unggah`                    | POST   | `::unggah`                     | Proses unggah, lalu redirect (PRG) |
+| `/pembayaran/bukti?kode_bayar=PAY/...`  | GET    | `::bukti`                      | Menampilkan bukti milik sendiri    |
+
+## C. Aturan bisnis → implementasi
+
+| Aturan                                     | Di mana                                                                                                     |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Wajib login penyewa                        | `wajibLoginPenyewa()` di setiap method; belum login → redirect ke `auth/login-penyewa`                      |
+| Hanya pembayaran miliknya                  | Query `JOIN t_sewa ... WHERE b.kode_bayar = ? AND s.user_plg = ?`; tidak cocok → HTTP 403                   |
+| Admin tidak boleh masuk proses penyewa     | Jika hanya admin yang login → HTTP 403                                                                      |
+| Nominal dari database, tidak dari formulir | Formulir tidak memiliki field nominal; `simpanBukti()` tidak menyentuh `nominal`                            |
+| Memperbarui record DP, bukan membuat baru  | `UPDATE t_bayar SET ft_byr, tgl_wkt_byr WHERE kode_bayar = ?`                                               |
+| Status tetap `pending`                     | `UPDATE` tidak mengubah `sttus_byr`                                                                         |
+| Yang sudah diverifikasi tidak bisa diubah  | Cek di Controller dan di Model (`FOR UPDATE` + `AND sttus_byr = 'pending'`)                                 |
+| Validasi jenis, MIME, ukuran               | `validasiDanSimpanBerkas()`: ekstensi, `finfo` MIME, `getimagesize`, maks. 2 MB, ekstensi harus sesuai MIME |
+| Nama berkas aman                           | `bayar_<YmdHis>_<16 hex random>.<ext>`; nama asli dari pengguna tidak dipakai                               |
+| Berkas privat                              | `.htaccess` + route `pembayaran/bukti` yang memeriksa kepemilikan                                           |
+| PRG                                        | Setiap hasil `POST /pembayaran/unggah` berakhir dengan `header('Location: ...')` + flash                    |
+| Prepared statement                         | Semua query berparameter memakai `prepare()` + `bind_param()`                                               |
+
+**Keputusan desain:** selama status masih `pending`, penyewa boleh **mengganti** bukti (berkas lama dihapus
+setelah update berhasil). Setelah diverifikasi admin, bukti terkunci.
+
+## D. Cara memasang
+
+1. Pastikan Tahap 1 selesai (nilai ENUM status sudah sesuai).
+2. Salin semua file dari folder ini ke proyek dengan path yang sama.
+3. Buka `http://localhost/dpwl-2522500050/`, login sebagai penyewa, lakukan checkout.
+4. Anda akan diarahkan ke `/pembayaran` dan melihat DP `pending`.
+
+## E. Pengujian Tahap 2
+
+Isi kolom _Hasil_ dan simpan tangkapan layar untuk README utama.
+
+| No  | Skenario                                 | Cara uji                                                                              | Diharapkan                                                                     | Hasil |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----- |
+| 1   | Buka halaman pembayaran setelah checkout | Checkout, lalu buka `/pembayaran` → _Bayar DP_                                        | Rincian transaksi dan DP tampil                                                |       |
+| 2   | Buka pembayaran milik akun lain          | Login penyewa B, buka URL detail milik penyewa A                                      | HTTP 403 "Akses ditolak"                                                       |       |
+| 3   | Unggah bukti valid                       | JPG/PNG/WEBP ≤ 2 MB                                                                   | Pesan sukses; `ft_byr` & `tgl_wkt_byr` berubah; berkas ada di `uploads/bayar/` |       |
+| 4   | Jenis berkas tidak diizinkan             | Unggah `.pdf`, `.gif`, `.txt`; coba juga file `.txt` yang diganti namanya jadi `.jpg` | Ditolak dengan pesan                                                           |       |
+| 5   | Ukuran berlebih                          | Gambar > 2 MB                                                                         | Ditolak dengan pesan ukuran                                                    |       |
+| 6   | Kirim tanpa memilih berkas               | Klik _Unggah Bukti_ tanpa berkas                                                      | Pesan "Pilih berkas bukti transfer terlebih dahulu."                           |       |
+| 7   | Status setelah unggah                    | Lihat halaman detail                                                                  | Status tetap **Pending**                                                       |       |
+| 15  | Belum login                              | Logout, buka `/pembayaran`                                                            | Diarahkan ke login penyewa                                                     |       |
+
+Periksa juga di database setelah uji 3:
+
+```sql
+SELECT kode_bayar, ft_byr, tgl_wkt_byr, sttus_byr, nominal, tgl_wkt_ver FROM t_bayar ORDER BY kode_bayar DESC;
+```
+
+`nominal` **tidak boleh** berubah, `sttus_byr` tetap `pending`, `tgl_wkt_ver` tetap `NULL`.

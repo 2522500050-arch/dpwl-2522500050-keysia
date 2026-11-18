@@ -71,9 +71,10 @@ unset($_SESSION['flash_transaksi']);
 
           <?php if (!$isPenyewaLogin): ?>
             <li class="nav-item">
-              <a class="nav-link"
-                href="<?= $e(site_url('auth/register')) ?>">
-                Registrasi
+              <a class="nav-icon text-decoration-none me-3"
+                href="<?= $e(site_url('pembayaran')) ?>"
+                title="Pembayaran DP">
+                <i class="fa fa-fw fa-credit-card text-dark"></i>
               </a>
             </li>
 
@@ -115,6 +116,15 @@ unset($_SESSION['flash_transaksi']);
           <a class="nav-icon position-relative text-decoration-none" href="<?= $e(site_url('transaksi/keranjang')) ?>" aria-label="Keranjang, <?= $jumlahKeranjang ?> kendaraan">
             <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
             <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark"><?= $jumlahKeranjang ?></span>
+          </a>
+
+          <!-- P9: Ikon Pembayaran Saya -->
+          <a
+            class="nav-icon text-decoration-none"
+            href="<?= $e(site_url('pembayaran')) ?>"
+            title="Pembayaran Saya"
+            aria-label="Pembayaran Saya">
+            <i class="fa fa-fw fa-credit-card text-dark mr-1"></i>
           </a>
 
           <!-- Ikon Profil Penyewa -->
