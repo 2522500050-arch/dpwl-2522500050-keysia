@@ -35,3 +35,20 @@ ALTER TABLE `t_sewa` CHANGE `status_sewa` `status_sewa`
 ENUM('diajukan','disetujui','ditolak','aktif','selesai','batal','keranjang','lunas')
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NULL DEFAULT 'keranjang';
 ```
+
+## Perubahan Struktur Basis Data (Tahap B)
+
+Pada tahap ini dilakukan penyesuaian struktur basis data pada tabel `t_sewa` untuk mendukung pencatatan status transaksi yang telah melunasi sisa kewajiban pembayaran (`lunas`).
+
+- **Tabel yang Diubah:** `t_sewa`
+- **Kolom yang Diubah:** `status_sewa`
+- **Detail Perubahan:** Menambahkan nilai ENUM `'lunas'` dengan tetap mempertahankan seluruh nilai ENUM sebelumnya (`diajukan`, `disetujui`, `ditolak`, `aktif`, `selesai`, `batal`, `keranjang`).
+- **Catatan Integrasi:** Perubahan hanya dilakukan pada tabel `t_sewa`. Struktur dan status kendaraan pada tabel `t_mobil` tidak diubah pada pertemuan ini karena proses serah terima kendaraan dibahas pada Pertemuan 11.
+
+**Perintah SQL yang Dijalankan:**
+
+```sql
+ALTER TABLE `t_sewa` CHANGE `status_sewa` `status_sewa`
+ENUM('diajukan','disetujui','ditolak','aktif','selesai','batal','keranjang','lunas')
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NULL DEFAULT 'keranjang';
+```
