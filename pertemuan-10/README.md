@@ -52,3 +52,31 @@ ALTER TABLE `t_sewa` CHANGE `status_sewa` `status_sewa`
 ENUM('diajukan','disetujui','ditolak','aktif','selesai','batal','keranjang','lunas')
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NULL DEFAULT 'keranjang';
 ```
+
+## Implementasi Model Pelunasan (Tahap C)
+
+Pada tahap ini ditambahkan empat _method_ baru di dalam berkas `application\models\Pembayaran_model.php` untuk mengelola logika pelunasan transaksi tanpa menghapus _method_ pembayaran dari P9.
+
+### Daftar Method yang Ditambahkan
+
+1. **`getDaftarPelunasan(): array`**
+   - Mengambil daftar transaksi berstatus `disetujui` atau `lunas` yang memiliki detail kendaraan pada `t_pilih`.
+   - Menghitung `total_transaksi` berdasarkan _snapshot_ tarif pada `t_pilih` (`hrg_sewa * n_hari`), `total_terbayar` dari pembayaran berstatus `valid` pada `t_bayar`, serta `sisa_kewajiban`.
+2. **`getDetailPelunasan(string $kodeSewa): ?array`**
+   - Mengambil informasi lengkap transaksi berdasarkan `kode_sewa`, meliputi data penyewa (`t_penyewa`), ringkasan biaya, riwayat pembayaran (`t_bayar`), serta rincian kendaraan yang disewa (`t_pilih` berelasi dengan `t_mobil`).
+3. **`buatKodeBayarPelunasan(string $tanggalKode): string`**
+   - _Method_ internal (`private`) untuk membuat nomor urut kode pembayaran harian berformat `PAY/YYYYMMDD/NN` (maksimal 99 transaksi per hari) di bawah perlindungan _named lock_ `dpwl_payment_code_sequence`.
+4. **`simpanPelunasan(string $kodeSewa, string $metodeBayar, ?string $namaFileBukti = null): string`**
+   - Mencatat pelunasan penuh sebesar seluruh sisa kewajiban dengan metode `tunai` atau `transfer` (wajib menyertakan berkas bukti untuk transfer).
+   - Dijalankan secara atomik menggunakan transaksi basis data (`begin_transaction`, `SELECT ... FOR UPDATE`, `commit`, dan `rollback`) serta _named lock_ `GET_LOCK` / `RELEASE_LOCK`.
+   - Langsung mencatat status pembayaran sebagai `valid` dan mengubah `t_sewa.status_sewa` menjadi `lunas` tanpa mengubah status kendaraan pada tabel `t_mobil`.
+
+### Hasil Pemeriksaan Awal Model (C.5)
+
+- [x] `getDaftarPelunasan()` menyaring transaksi yang memenuhi syarat pelunasan dan menghitung sisa kewajiban dengan benar.
+- [x] `getDetailPelunasan()` menyusun data transaksi, penyewa, riwayat pembayaran, dan rincian kendaraan secara lengkap.
+- [x] Kode pembayaran yang dihasilkan mengikuti format `PAY/YYYYMMDD/NN` dan menggunakan _named lock_ yang sama dengan P9.
+- [x] Nominal pelunasan otomatis menggunakan seluruh nilai sisa kewajiban (`$sisaKewajiban`) dan dibatasi maksimal `8.388.607` (`MEDIUMINT`).
+- [x] Validasi menolak metode pembayaran selain `tunai` dan `transfer`, serta menolak transaksi yang sudah memiliki _record_ `jns_byr = 'pelunasan'`.
+- [x] Pencatatan pelunasan mengubah `status_sewa` menjadi `lunas` dan mempertahankan status kendaraan pada `t_mobil`.
+- [x] Mekanisme `try-catch` dengan `rollback()` diterapkan untuk membatalkan transaksi apabila terjadi kegagalan di tengah proses.
