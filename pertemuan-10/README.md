@@ -80,3 +80,34 @@ Pada tahap ini ditambahkan empat _method_ baru di dalam berkas `application\mode
 - [x] Validasi menolak metode pembayaran selain `tunai` dan `transfer`, serta menolak transaksi yang sudah memiliki _record_ `jns_byr = 'pelunasan'`.
 - [x] Pencatatan pelunasan mengubah `status_sewa` menjadi `lunas` dan mempertahankan status kendaraan pada `t_mobil`.
 - [x] Mekanisme `try-catch` dengan `rollback()` diterapkan untuk membatalkan transaksi apabila terjadi kegagalan di tengah proses.
+
+## Implementasi Controller Pelunasan & Dokumen Transaksi (Tahap D)
+
+Pada tahap ini berkas `application\controllers\Pembayaran_controller.php` dikembangkan dengan mengintegrasikan `Pembayaran_model.php` serta menambahkan empat _method_ baru untuk sisi admin tanpa menghapus fitur pembayaran DP penyewa dari P9.
+
+### Daftar Method yang Ditambahkan
+
+1. **`pelunasanIndex(): void`**
+   - Memastikan pengguna sudah login sebagai admin melalui `require_admin_login()` dan membatasi metode HTTP ke `GET`.
+   - Mengambil daftar transaksi yang dapat dilunasi dari `Pembayaran_model::getDaftarPelunasan()` dan mengirimkan datanya ke _view_ `admin/pelunasan`.
+2. **`pelunasanDetail(string $kodeSewa = ''): void`**
+   - Mengonversi karakter `~` pada parameter URL kembali menjadi `/`, lalu mengambil data lengkap transaksi dari `Pembayaran_model::getDetailPelunasan($kodeSewa)`.
+   - Menampilkan halaman detail dan formulir pelunasan melalui _view_ `admin/pelunasan_detail`, atau mengembalikan respons `404` apabila transaksi tidak ditemukan.
+3. **`prosesPelunasan(string $kodeSewa = ''): void`**
+   - Memproses pengiriman formulir pelunasan (`POST`) dari admin dengan pilihan metode `tunai` atau `transfer`.
+   - Memvalidasi dan mengunggah berkas bukti pembayaran (`ft_byr`, maksimal 5 MB) melalui _helper_ `simpanFileBukti()` khusus untuk metode `transfer`, lalu mencatat pelunasan secara atomik melalui `Pembayaran_model::simpanPelunasan()`.
+   - Menerapkan pola _Post-Redirect-Get_ (PRG) melalui `redirectDenganPesan()` serta menghapus berkas bukti baru (`hapusBuktiBaru()`) apabila terjadi kegagalan penyimpanan.
+4. **`dokumenTransaksi(string $kodeSewa = ''): void`**
+   - Mengambil rincian transaksi, penyewa, kendaraan, dan riwayat pembayaran melalui `getDetailPelunasan()` dan meneruskannya ke _view_ `admin/dokumen_transaksi` untuk dicetak.
+
+### Pemertahanan Fitur P9 & Penyesuaian Integrasi
+
+- Seluruh _method_ pembayaran DP milik penyewa dari P9 (`index()`, `detail()`, `bukti()`, `unggah()`) beserta validasi CSRF dan _helper_ penyimpanan berkas tetap dipertahankan dan berfungsi normal.
+- Menambahkan _method_ jembatan `redirectDenganPesan()`, `simpanFileBukti()`, dan `hapusBuktiBaru()` agar selaras dengan _helper_ `bukti_helper.php` dari P9.
+
+### Hasil Pemeriksaan Awal Controller (D.6)
+
+- [x] Seluruh _method_ pelunasan dan dokumen transaksi telah dilindungi oleh `require_admin_login()`.
+- [x] Pembatasan metode HTTP (`GET` untuk tampilan halaman dan `POST` untuk pemrosesan pelunasan) telah diterapkan.
+- [x] Validasi ketersediaan kode transaksi, pilihan metode (`tunai`/`transfer`), dan unggahan bukti transfer berjalan sesuai ketentuan.
+- [x] Penanganan pengecualian (`try-catch`) dan pola PRG telah diterapkan dengan baik.
