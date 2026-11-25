@@ -111,3 +111,32 @@ Pada tahap ini berkas `application\controllers\Pembayaran_controller.php` dikemb
 - [x] Pembatasan metode HTTP (`GET` untuk tampilan halaman dan `POST` untuk pemrosesan pelunasan) telah diterapkan.
 - [x] Validasi ketersediaan kode transaksi, pilihan metode (`tunai`/`transfer`), dan unggahan bukti transfer berjalan sesuai ketentuan.
 - [x] Penanganan pengecualian (`try-catch`) dan pola PRG telah diterapkan dengan baik.
+
+### E. Membuat Route dan Integrasi Menu Pelunasan
+
+#### 1. Daftar Berkas yang Diubah
+
+- `application\config\routes.php`
+- `application\views\templates\sidebar.php`
+
+#### 2. Penambahan Route Baru
+
+Menambahkan rute untuk menghubungkan URL pelunasan dan dokumen transaksi ke `Pembayaran_controller` dengan memperhatikan urutan spesifik ke umum serta mempertahankan seluruh rute P9:
+
+- **Route Daftar Pelunasan:** `$route['admin/pembayaran/pelunasan'] = 'Pembayaran_controller/pelunasanIndex';`
+- **Route Proses Pelunasan:** `$route['admin/pembayaran/pelunasan/proses/(:any)'] = 'Pembayaran_controller/prosesPelunasan/$1';`
+- **Route Dokumen Transaksi:** `$route['admin/pembayaran/dokumen/(:any)'] = 'Pembayaran_controller/dokumenTransaksi/$1';`
+- **Route Detail Pelunasan:** `$route['admin/pembayaran/pelunasan/(:any)'] = 'Pembayaran_controller/pelunasanDetail/$1';`
+
+#### 3. Integrasi Menu Navigasi Admin
+
+- Menambahkan menu **Pelunasan Transaksi** pada `application\views\templates\sidebar.php` yang mengarah ke URL `admin/pembayaran/pelunasan` khusus untuk antarmuka admin.
+
+#### 4. Hasil Pemeriksaan Route dan Navigasi
+
+- Seluruh route baru berhasil didefinisikan tanpa menimpa atau bertentangan dengan route P9.
+- Urutan penulisan route sudah sesuai (route spesifik seperti `proses/(:any)` ditempatkan sebelum route umum `pelunasan/(:any)`).
+- Route proses pelunasan sudah terhubung ke method `prosesPelunasan()` yang membatasi akses hanya menggunakan metode HTTP `POST`.
+- Seluruh method tujuan (`pelunasanIndex`, `pelunasanDetail`, `prosesPelunasan`, `dokumenTransaksi`) sudah diproteksi menggunakan `require_admin_login()`.
+- Menu **Pelunasan Transaksi** berhasil tampil pada sidebar halaman admin dan mengarah ke URL yang sesuai.
+- **Catatan Pengujian:** Saat tautan menu diklik pada tahap ini, aplikasi menampilkan pesan fallback error (_"Daftar transaksi pelunasan belum dapat ditampilkan. Silakan coba kembali."_) karena berkas View (`admin/pelunasan.php`) belum dibuat dan baru akan diimplementasikan pada tahap F.
