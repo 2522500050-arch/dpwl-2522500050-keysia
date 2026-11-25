@@ -140,3 +140,30 @@ Menambahkan rute untuk menghubungkan URL pelunasan dan dokumen transaksi ke `Pem
 - Seluruh method tujuan (`pelunasanIndex`, `pelunasanDetail`, `prosesPelunasan`, `dokumenTransaksi`) sudah diproteksi menggunakan `require_admin_login()`.
 - Menu **Pelunasan Transaksi** berhasil tampil pada sidebar halaman admin dan mengarah ke URL yang sesuai.
 - **Catatan Pengujian:** Saat tautan menu diklik pada tahap ini, aplikasi menampilkan pesan fallback error (_"Daftar transaksi pelunasan belum dapat ditampilkan. Silakan coba kembali."_) karena berkas View (`admin/pelunasan.php`) belum dibuat dan baru akan diimplementasikan pada tahap F.
+
+### F. Membuat View Daftar dan Detail Pelunasan
+
+#### 1. Daftar Berkas yang Ditambahkan / Diperbaiki
+
+- `application\views\admin\pelunasan.php` (Baru — Halaman daftar transaksi yang dapat diproses pelunasannya)
+- `application\views\admin\pelunasan_detail.php` (Baru — Halaman detail transaksi, riwayat pembayaran, dan formulir pencatatan pelunasan)
+- `application\models\Pembayaran_model.php` (Perbaikan inisialisasi koneksi database `global $db;` pada `__construct()`)
+- `application\models\Transaksi_model.php` (Memastikan deklarasi class sesuai dan tidak tertimpa)
+
+#### 2. Fitur yang Diimplementasikan pada View
+
+- **Daftar Pelunasan (`pelunasan.php`):** Menampilkan daftar transaksi dengan sisa kewajiban pembayaran meliputi kode sewa, identitas penyewa, nomor HP, periode sewa, status transaksi, total transaksi, total terbayar, sisa kewajiban, serta tautan menuju halaman detail.
+- **Detail & Form Pelunasan (`pelunasan_detail.php`):**
+  - Menampilkan informasi lengkap transaksi, identitas penyewa, rincian kendaraan (tarif snapshot), ringkasan kewajiban, dan riwayat pembayaran (DP maupun pelunasan).
+  - Menyediakan formulir pencatatan pelunasan dengan metode `POST` dan `enctype="multipart/form-data"` untuk nominal tetap sebesar seluruh sisa kewajiban.
+  - Menggunakan JavaScript dinamis untuk menampilkan input unggah bukti transfer (`ft_byr`) secara wajib hanya saat metode **Transfer** dipilih, dan menyembunyikannya saat metode **Tunai** dipilih.
+  - Menyembunyikan formulir pelunasan secara otomatis apabila transaksi sudah memiliki record pelunasan atau berstatus `lunas`.
+  - Menerapkan _output escaping_ menggunakan `htmlspecialchars()` pada seluruh data teks untuk mencegah serangan XSS.
+
+#### 3. Hasil Pemeriksaan dan Pengujian Aktual
+
+- Halaman daftar pelunasan (`admin/pembayaran/pelunasan`) berhasil menampilkan daftar transaksi yang masih memiliki sisa kewajiban pembayaran.
+- Tautan **Detail / Proses** berhasil mengarahkan ke halaman detail transaksi yang sesuai.
+- Pemilihan metode **Tunai** menyembunyikan input bukti transfer, sedangkan metode **Transfer** menampilkan dan mewajibkan unggahan bukti transfer.
+- Proses pencatatan pelunasan berhasil dijalankan dengan metode `POST`, menampilkan pesan notifikasi sukses, mengubah status transaksi menjadi `lunas`, memperbarui sisa kewajiban menjadi `Rp 0`, dan menyembunyikan formulir pelunasan agar tidak terjadi pelunasan ganda.
+- Fitur pembayaran dari Pertemuan 9 (verifikasi DP admin dan unggah bukti DP penyewa) tetap berjalan dengan baik tanpa gangguan.
