@@ -167,3 +167,27 @@ Menambahkan rute untuk menghubungkan URL pelunasan dan dokumen transaksi ke `Pem
 - Pemilihan metode **Tunai** menyembunyikan input bukti transfer, sedangkan metode **Transfer** menampilkan dan mewajibkan unggahan bukti transfer.
 - Proses pencatatan pelunasan berhasil dijalankan dengan metode `POST`, menampilkan pesan notifikasi sukses, mengubah status transaksi menjadi `lunas`, memperbarui sisa kewajiban menjadi `Rp 0`, dan menyembunyikan formulir pelunasan agar tidak terjadi pelunasan ganda.
 - Fitur pembayaran dari Pertemuan 9 (verifikasi DP admin dan unggah bukti DP penyewa) tetap berjalan dengan baik tanpa gangguan.
+
+### G. Membuat Dokumen Transaksi
+
+#### 1. Daftar Berkas yang Ditambahkan
+
+- `application\views\admin\dokumen_transaksi.php` (Baru — Tampilan cetak/PDF ringkasan dokumen transaksi penyewaan kendaraan)
+
+#### 2. Fitur yang Diimplementasikan pada View
+
+- **Penyajian Data Relasional (MVC):** Menampilkan data hasil olahan `Pembayaran_model::getDetailPelunasan()` yang disalurkan oleh `Pembayaran_controller::dokumenTransaksi()`, mencakup relasi antar tabel `t_sewa`, `t_penyewa`, `t_pilih`, `t_mobil`, dan `t_bayar` tanpa menjalankan query SQL mandiri di dalam View.
+- **Struktur Informasi Dokumen:**
+  - **Informasi Transaksi:** Kode transaksi, status transaksi, tanggal mulai sewa, tanggal selesai sewa, dan waktu pengambilan.
+  - **Identitas Penyewa:** Nama lengkap, username, NIK, nomor telepon, dan alamat.
+  - **Rincian Kendaraan:** Tabel nomor polisi, nama kendaraan, tarif snapshot per hari, lama sewa, dan subtotal.
+  - **Riwayat Pembayaran:** Tabel kode pembayaran, tanggal pembayaran, jenis pembayaran (DP dan pelunasan), metode pembayaran, nominal, dan status pembayaran.
+  - **Ringkasan Pembayaran:** Total transaksi, total pembayaran valid, serta sisa kewajiban.
+- **Pengaturan Cetak & PDF (`@media print`):** Menyediakan tombol **Cetak / Simpan sebagai PDF** (`window.print()`) dengan pengaturan CSS khusus cetak ukuran kertas A4 sehingga tombol aksi tidak ikut tercetak dan tata letak tabel tetap rapi tanpa terpotong.
+- **Keamanan Output:** Menerapkan _output escaping_ menggunakan `htmlspecialchars()` pada seluruh informasi teks dari basis data.
+
+#### 3. Hasil Pemeriksaan dan Pengujian Aktual
+
+- Halaman dokumen transaksi berhasil dibuka melalui tombol **Lihat / Cetak Dokumen Transaksi** pada halaman detail pelunasan.
+- Seluruh informasi transaksi, identitas penyewa, rincian kendaraan, riwayat pembayaran (DP dan pelunasan), serta ringkasan pembayaran tampil akurat sesuai data pada basis data.
+- Tombol **Cetak / Simpan sebagai PDF** berhasil membuka pratinjau cetak peramban dengan tampilan bersih (tombol aksi tersembunyi saat dicetak) dan dapat disimpan sebagai berkas PDF dengan tata letak yang terbaca jelas.
