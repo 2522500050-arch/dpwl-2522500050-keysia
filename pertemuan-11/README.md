@@ -37,3 +37,13 @@ Sistem mencatat waktu aktual penyerahan pada `t_sewa.wkt_ambil` dan mengubah `t_
 menjadi `aktif`. Status kendaraan tetap `disewa` dan tidak dibuat pembayaran baru.
 Implementasi direncanakan menggunakan pemisahan tanggung jawab MVC: Model mengelola pengambilan dan
 penyimpanan data, Controller menangani alur permintaan dan validasi
+
+### C. Implementasi Model Serah Terima
+
+Membuat `application/models/SerahTerima_model.php` untuk mengelola pengambilan daftar dan detail
+transaksi serah terima serta pemrosesan penyerahan kendaraan. Model menggunakan MySQLi, prepared
+statement, kueri lintas tabel, validasi persyaratan transaksi, dan transaksi basis data.
+Proses serah terima memeriksa status transaksi, validitas pembayaran DP, kelengkapan dokumen KTP dan
+SIM A, serta keberadaan kendaraan. Jika seluruh persyaratan terpenuhi, sistem mencatat waktu aktual
+pengambilan dan mengubah status transaksi menjadi `aktif`. Status kendaraan tetap `disewa`.
+Pengujian fungsional Model: dilanjutkan setelah integrasi Controller, route, dan View.
